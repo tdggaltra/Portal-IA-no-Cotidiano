@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Aulas — IA no Cotidiano | Prof. Eron Ponce · UniFil</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --orange:      #FF8C00;
+            --orange-glow: #FF8C0033;
+            --orange-soft: #FF8C0018;
+            --dark:        #111114;
+            --card:        #22222A;
+            --card-hover:  #26262F;
+            --border:      #2E2E3A;
+            --border-hover:#FF8C0066;
+            --text:        #E8E8F0;
+            --muted:       #888899;
+            --white:       #FFFFFF;
+            --ai-blue:     #1565C033;
+            --ai-purple:   #6A1B9A33;
+            --ai-teal:     #00695C33;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background: var(--dark);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ── NOISE TEXTURE ── */
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none; z-index: 0;
+        }
+
+        /* ── HEADER ── */
+        header {
+            position: relative;
+            padding: 64px 40px 52px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: -140px; left: 50%;
+            transform: translateX(-50%);
+            width: 700px; height: 360px;
+            background: radial-gradient(ellipse, var(--orange-glow) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        /* ── ANIMATED GRID BG ── */
+        header::after {
+            content: '';
+            position: absolute; inset: 0;
+            background-image:
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 48px 48px;
+            opacity: 0.25;
+            pointer-events: none;
+            mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent);
+        }
+
+        .header-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--orange-glow);
+            border: 1px solid var(--orange);
+            color: var(--orange);
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            padding: 6px 16px;
+            border-radius: 100px;
+            margin-bottom: 28px;
+            position: relative; z-index: 1;
+        }
+        .header-badge::before {
+            content: '';
+            width: 6px; height: 6px;
+            background: var(--orange);
+            border-radius: 50%;
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50%       { opacity: 0.5; transform: scale(0.7); }
+        }
+
+        header h1 {
+            font-size: clamp(2rem, 5vw, 3.8rem);
+            font-weight: 800;
+            line-height: 1.1;
+            color: var(--white);
+            margin-bottom: 14px;
+            position: relative; z-index: 1;
+        }
+        header h1 span { color: var(--orange); }
+
+        .header-sub {
+            font-size: 1rem;
+            color: var(--muted);
+            font-weight: 300;
+            max-width: 540px;
+            margin: 0 auto 36px;
+            line-height: 1.65;
+            position: relative; z-index: 1;
+        }
+
+        .header-meta {
+            display: flex;
+            justify-content: center;
+            gap: 28px;
+            flex-wrap: wrap;
+            position: relative; z-index: 1;
+        }
+
+        .meta-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+        .meta-pill .dot {
+            width: 5px; height: 5px;
+            background: var(--orange);
+            border-radius: 50%;
+        }
+
+        /* ── STATS ROW ── */
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 32px;
+            position: relative; z-index: 1;
+        }
+
+        .stat-chip {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 20px;
+            text-align: center;
+        }
+        .stat-chip .sc-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.3rem;
+            font-weight: 500;
+            color: var(--orange);
+            display: block;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+        .stat-chip .sc-lbl {
+            font-size: 0.7rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .08em;
+        }
+
+        /* ── SEARCH ── */
+        .search-wrap {
+            max-width: 580px;
+            margin: 40px auto 0;
+            padding: 0 20px;
+            position: relative; z-index: 1;
+        }
+        .search-box { position: relative; }
+        .search-box input {
+            width: 100%;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 20px 14px 48px;
+            font-family: 'Sora', sans-serif;
+            font-size: 0.88rem;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .search-box input:focus {
+            border-color: var(--orange);
+            box-shadow: 0 0 0 3px var(--orange-soft);
+        }
+        .search-box input::placeholder { color: var(--muted); }
+        .search-icon {
+            position: absolute;
+            left: 16px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            font-size: 1rem;
+            pointer-events: none;
+        }
+
+        /* ── MAIN ── */
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 64px 24px 88px;
+        }
+
+        /* ── DISCIPLINE SECTION ── */
+        .discipline {
+            margin-bottom: 72px;
+            opacity: 0;
+            transform: translateY(22px);
+            animation: fadeUp 0.5s forwards;
+        }
+        .discipline:nth-child(1) { animation-delay: 0.05s; }
+        .discipline:nth-child(2) { animation-delay: 0.15s; }
+        .discipline:nth-child(3) { animation-delay: 0.25s; }
+
+        @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+        .discipline-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 22px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .disc-icon {
+            width: 46px; height: 46px;
+            border-radius: 11px;
+            background: var(--orange-glow);
+            border: 1px solid var(--orange);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.35rem;
+            flex-shrink: 0;
+        }
+
+        .disc-info h2 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--white);
+            line-height: 1.3;
+        }
+        .disc-info p {
+            font-size: 0.74rem;
+            color: var(--muted);
+            margin-top: 3px;
+        }
+
+        .disc-meta {
+            margin-left: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+        .disc-count {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--orange);
+            background: var(--orange-glow);
+            border: 1px solid var(--orange);
+            border-radius: 6px;
+            padding: 4px 10px;
+        }
+        .disc-carga {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--muted);
+        }
+
+        /* ── LESSON GRID ── */
+        .lessons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            gap: 13px;
+        }
+
+        /* ── LESSON CARD ── */
+        .lesson-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px;
+            text-decoration: none;
+            color: var(--text);
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            transition: border-color 0.2s, background 0.2s, transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .lesson-card::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, var(--orange-glow), transparent 60%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .lesson-card:hover {
+            border-color: var(--orange);
+            background: var(--card-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(255,140,0,0.1);
+        }
+        .lesson-card:hover::before { opacity: 1; }
+
+        /* type-coloured left glow */
+        .lesson-card.type-lab::before   { background: linear-gradient(135deg, var(--ai-teal), transparent 60%); }
+        .lesson-card.type-lab:hover     { border-color: #26A69A; }
+        .lesson-card.type-eval::before  { background: linear-gradient(135deg, var(--ai-purple), transparent 60%); }
+        .lesson-card.type-eval:hover    { border-color: #AB47BC; }
+        .lesson-card.type-bonus::before { background: linear-gradient(135deg, var(--ai-blue), transparent 60%); }
+        .lesson-card.type-bonus:hover   { border-color: #42A5F5; }
+
+        .lesson-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.66rem;
+            color: var(--orange);
+            background: var(--orange-glow);
+            border: 1px solid var(--orange);
+            border-radius: 6px;
+            padding: 3px 8px;
+            flex-shrink: 0;
+            margin-top: 2px;
+            white-space: nowrap;
+        }
+        .lesson-card.type-lab  .lesson-num { color: #26A69A; background: #00695C22; border-color: #26A69A; }
+        .lesson-card.type-eval .lesson-num { color: #AB47BC; background: #6A1B9A22; border-color: #AB47BC; }
+        .lesson-card.type-bonus .lesson-num { color: #42A5F5; background: #1565C022; border-color: #42A5F5; }
+
+        .lesson-info {
+            position: relative; z-index: 1;
+            flex: 1; min-width: 0;
+        }
+        .lesson-title {
+            font-size: 0.86rem;
+            font-weight: 600;
+            color: var(--white);
+            line-height: 1.3;
+            margin-bottom: 4px;
+        }
+        .lesson-desc {
+            font-size: 0.72rem;
+            color: var(--muted);
+            line-height: 1.45;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        /* ── TYPE TAG ── */
+        .type-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            padding: 2px 7px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+        .tag-teoria  { background: #1565C022; color: #42A5F5; border: 1px solid #1565C044; }
+        .tag-lab     { background: #00695C22; color: #26A69A; border: 1px solid #00695C44; }
+        .tag-mista   { background: #FF8C0018; color: var(--orange); border: 1px solid var(--orange-glow); }
+        .tag-eval    { background: #6A1B9A22; color: #AB47BC; border: 1px solid #6A1B9A44; }
+        .tag-bonus   { background: #1565C022; color: #64B5F6; border: 1px solid #1565C044; }
+
+        .lesson-arrow {
+            margin-left: auto;
+            color: var(--muted);
+            font-size: 0.95rem;
+            transition: color 0.2s, transform 0.2s;
+            position: relative; z-index: 1;
+            flex-shrink: 0;
+            align-self: center;
+        }
+        .lesson-card:hover .lesson-arrow { color: var(--orange); transform: translateX(3px); }
+
+        .lesson-card.soon {
+            opacity: 0.32;
+            pointer-events: none;
+            cursor: default;
+        }
+        .lesson-card.soon .lesson-num {
+            color: var(--muted);
+            background: transparent;
+            border-color: var(--border);
+        }
+
+        /* ── SECTION DIVIDER ── */
+        .section-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 28px 0 14px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .1em;
+        }
+        .section-label::before,
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* ── EMPTY STATE ── */
+        .empty-state {
+            text-align: center;
+            padding: 72px 20px;
+            color: var(--muted);
+            display: none;
+        }
+        .empty-state .icon { font-size: 2.8rem; margin-bottom: 14px; }
+        .empty-state p { font-size: 0.9rem; }
+
+        /* ── GITHUB SETUP BOX ── */
+        .setup-box {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 28px 32px;
+            margin-bottom: 72px;
+            opacity: 0;
+            transform: translateY(22px);
+            animation: fadeUp 0.5s 0.4s forwards;
+        }
+        .setup-box h3 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--white);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .setup-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 14px;
+        }
+        .setup-step {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+        .step-n {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            color: var(--orange);
+            background: var(--orange-glow);
+            border: 1px solid var(--orange);
+            border-radius: 6px;
+            padding: 3px 8px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .step-text { font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
+        .step-text strong { color: var(--text); }
+        .code-inline {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            background: #1a1a22;
+            border: 1px solid var(--border);
+            color: var(--orange);
+            padding: 2px 7px;
+            border-radius: 5px;
+        }
+
+        /* ── FOOTER ── */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 36px 24px;
+            text-align: center;
+        }
+        footer p { font-size: 0.78rem; color: var(--muted); line-height: 1.8; }
+        footer span { color: var(--orange); }
+
+        /* ── HIDDEN ── */
+        .discipline.hidden { display: none; }
+        .lesson-card.hidden { display: none; }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 640px) {
+            header { padding: 44px 20px 40px; }
+            .lessons-grid { grid-template-columns: 1fr; }
+            .disc-meta { display: none; }
+            .stats-row { gap: 8px; }
+            .stat-chip { padding: 8px 14px; }
+            .setup-box { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     HEADER
+══════════════════════════════════════════════ -->
+<header>
+    <div class="header-badge">UniFil — Centro Universitário Filadélfia</div>
+    <h1>IA no <span>Cotidiano</span></h1>
+    <p class="header-sub">
+        Material didático de <strong style="color:var(--text);">Prof. Tiago Dutra Galvão</strong> —
+        Inteligência Artificial: Desmistificando a IA no Cotidiano.<br>
+        Selecione uma aula e acesse direto no navegador.
+    </p>
+    <div class="header-meta">
+        <div class="meta-pill"><span class="dot"></span>Londrina, Paraná</div>
+        <div class="meta-pill"><span class="dot"></span>CC &amp; ES · 2026.1</div>
+        <div class="meta-pill"><span class="dot"></span>Quintas-feiras · 30/04 – 09/07</div>
+        <div class="meta-pill"><span class="dot"></span><span id="total-count">— aulas disponíveis</span></div>
+    </div>
+    <div class="stats-row">
+        <div class="stat-chip"><span class="sc-num">11</span><span class="sc-lbl">Aulas</span></div>
+        <div class="stat-chip"><span class="sc-num">33h</span><span class="sc-lbl">Carga horária</span></div>
+        <div class="stat-chip"><span class="sc-num">4</span><span class="sc-lbl">Grandes áreas</span></div>
+        <div class="stat-chip"><span class="sc-num">100%</span><span class="sc-lbl">Prático</span></div>
+    </div>
+    <div class="search-wrap">
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput"
+                   placeholder="Buscar aula, tema ou ferramenta..."
+                   autocomplete="off">
+        </div>
+    </div>
+</header>
+
+<!-- ══════════════════════════════════════════════
+     MAIN
+══════════════════════════════════════════════ -->
+<main>
+
+    <!-- ─────────────────────────────────────────
+         DISCIPLINA — IA NO COTIDIANO
+    ───────────────────────────────────────────── -->
+    <section class="discipline" data-disc="ia">
+        <div class="discipline-header">
+            <div class="disc-icon">🤖</div>
+            <div class="disc-info">
+                <h2>Inteligência Artificial: Desmistificando a IA no Cotidiano</h2>
+                <p>Ciência da Computação &amp; Engenharia de Software · Quintas-feiras · 2026.1</p>
+            </div>
+            <div class="disc-meta">
+                <span class="disc-count" id="count-ia">—</span>
+                <span class="disc-carga">33h · 11 aulas</span>
+            </div>
+        </div>
+
+        <div class="lessons-grid">
+
+            <!-- AULA 01 -->
+            <a class="lesson-card" href="aulas_ia_unifil/aula01_introducao_ia.html" target="_blank">
+                <span class="lesson-num">01</span>
+                <div class="lesson-info">
+                    <div class="lesson-title">Introdução à IA</div>
+                    <div class="lesson-desc">Conceitos, histórico, panorama atual — do Teste de Turing ao ChatGPT</div>
+                    <span class="type-tag tag-mista">Teórico-Prática</span>
+                </div>
+                <span class="lesson-arrow">→</span>
+            </a>
+
+            <!-- AULA 02 -->
+            <a class="lesson-card" href="aulas_ia_unifil/aula02_pln.html" target="_blank">
+                <span class="lesson-num">02</span>
+                <div class="lesson-info">
+                    <div class="lesson-title">Processamento de Linguagem Natural</div>
+                    <div class="lesson-desc">Fundamentos de PLN, LLMs, ChatGPT vs Claude vs Gemini, NotebookLM</div>
+                    <span class="type-tag tag-mista">Teórico-Prática</span>
+                </div>
+                <span class="lesson-arrow">→</span>
+            </a>
+
+            <!-- AULA 03 -->
+            <a class="lesson-card" href="aulas_ia_unifil/aula03_engenharia_prompts.html" target="_blank">
+                <span class="lesson-num">03</span>
+                <div class="lesson-info">
+                    <div class="lesson-title">Engenharia de Prompts</div>
+                    <div class="lesson-desc">Zero-shot, few-shot, chain-of-thought — como falar com a IA para obter resultados</div>
+                    <span class="type-tag tag-lab">Laboratório</span>
+                </div>
+                <span class="lesson-arrow">→</span>
+            </a>
+
+            <!-- AULA 04 -->
+            <a class="lesson-card" href="aulas_ia_unifil/aula04_geracao_imagens.html" target="_blank">
+                <span class="lesson-num">04</span>
+                <div class="lesson-info">
+                    <div class="lesson-title">Geração de Imagens com IA</div>
+                    <div class="lesson-desc">DALL-E 3, Midjourney, Ideogram, Stable Diffusion — prompts visuais e edição</div>
+                    <span class="type-tag tag-mista">Teórico-Prática</span>
+                </div>
+                <span class="lesson-arrow">→</span>
+            </a>
+
+            <!-- AULA 05 -->
+            <a class="lesson-card" href="aulas_ia_unifil/aula05_voz.html" target="_blank">
+                <span class="lesson-num">05</span>
+                <div class="lesson-info">
+                    <div class="lesson-title">Síntese e Reconhecimento de Voz</div>
+                    <div class="lesson-desc">Whisper, ElevenLabs, NotebookLM Audio — TTS, STT e aplicações reais</div>
+                    <span class="type-tag tag-mista">Teórico-Prática</span>
+                </div>
+                <span class="lesson-arrow">→</span>
+            </a>
+
+            <!-- AULA 06 -->
+            <a class="lesson-card type-lab" href="aulas_ia_unifil/aula06_visao_computacional.html" target="_blank">
+                <span class="lesson-num">06</span>
+                <div class="lesson-info">
+                    <div class="lesson-title">Visão Computacional na Prática</div>
+                    <div class="lesson-desc">Teachable Machine, Google Cloud Vision, GPT-4o Vision — treinar sem código</div>
+                    <span class="type-tag tag-lab">Laboratório</span>
+                </div>
+                <span class="lesson-arrow">→</span>
+            </a>
+
+            <!-- AULA 07 -->
+            <a class="lesson-card type-lab" href="aulas_ia_unifil/aula07_automacao.html" target="_blank">
+                <span class="lesson-num">07</span>
+                <div class="lesson-info">
+                    <div class="lesson-title">Automação de Tarefas com IA</div>
+                    <div class="lesson-desc">n8n, Zapier, Make, agentes autônomos — fluxos inteligentes sem código</div>
+                    <span class="type-tag tag-lab">Laboratório</span>
+                </div>
+                <span class="lesson-arrow">→</span>
+            </a>
+
+            <!-- AULA 08 -->
+            <a class="lesson-card" href="aulas_ia_unifil/aula08_dados.html" target="_blank">
+                <span class="lesson-num">08</span>
+                <div class="lesson-info">
+                    <div class="lesson-title">Reconhecimento e Visualização de Dados</div>
+                    <div class="lesson-desc">Julius AI, ChatGPT Data Analysis — análise em português, sem programar</div>
+                    <span class="type-tag tag-mista">Teórico-Prática</span>
+                </div>
+                <span class="lesson-arrow">→</span>
+            </a>
+
+            <!-- AULA 09 -->
+            <a class="lesson-card type-lab" href="aulas_ia_unifil/aula09_produtividade.html" target="_blank">
+                <span class="lesson-num">09</span>
+                <div class="lesson-info">
+                    <div class="lesson-title">IA para Produtividade</div>
+                    <div class="lesson-desc">Gamma, Microsoft Copilot, Notion AI — slides, docs e e-mails em segundos</div>
+                    <span class="type-tag tag-lab">Laboratório</span>
+                </div>
+                <span class="lesson-arrow">→</span>
+            </a>
+
+            <!-- AULA 10 -->
+            <a class="lesson-card" href="aulas_ia_unifil/aula10_etica_tendencias.html" target="_blank">
+                <span class="lesson-num">10</span>
+                <div class="lesson-info">
+                    <div class="lesson-title">Ética, Tendências e Projeto Final</div>
+                    <div class="lesson-desc">Deepfakes, LGPD, EU AI Act, IA no mercado — orientação do projeto final</div>
+                    <span class="type-tag tag-teoria">Seminário</span>
+                </div>
+                <span class="lesson-arrow">→</span>
+            </a>
+
+            <!-- AULA 11 -->
+            <a class="lesson-card type-eval" href="aulas_ia_unifil/aula11_projeto_final.html" target="_blank">
+                <span class="lesson-num">11</span>
+                <div class="lesson-info">
+                    <div class="lesson-title">Apresentações dos Projetos Finais</div>
+                    <div class="lesson-desc">Demonstração ao vivo dos projetos — critérios, rubrica e encerramento do semestre</div>
+                    <span class="type-tag tag-eval">Avaliação · 40%</span>
+                </div>
+                <span class="lesson-arrow">→</span>
+            </a>
+
+        </div>
+
+        <!-- ── ATIVIDADES E EXTRAS ── -->
+        <div class="section-label">Atividades e Materiais Extras</div>
+
+        <div class="lessons-grid">
+
+            <!-- ATIVIDADE AULA 03 -->
+            <a class="lesson-card type-bonus" href="atividade_aula03_prompt_battle.html" target="_blank">
+                <span class="lesson-num">Atividade 03</span>
+                <div class="lesson-info">
+                    <div class="lesson-title">⚔️ Prompt Battle!</div>
+                    <div class="lesson-desc">Atividade prática gamificada — 4 rounds, placar ao vivo, timer e pódio interativo</div>
+                    <span class="type-tag tag-bonus">Prática · Aula 03</span>
+                </div>
+                <span class="lesson-arrow">→</span>
+            </a>
+
+            <!-- PLANO DE CURSO -->
+            <a class="lesson-card type-bonus" href="Plano_Curso_IA_Pratica.docx" target="_blank">
+                <span class="lesson-num">Plano</span>
+                <div class="lesson-info">
+                    <div class="lesson-title">📄 Plano de Curso</div>
+                    <div class="lesson-desc">Ementa, objetivos, cronograma, avaliações e referências — documento Word completo</div>
+                    <span class="type-tag tag-bonus">Download · .docx</span>
+                </div>
+                <span class="lesson-arrow">→</span>
+            </a>
+
+        </div>
+
+    </section>
+
+    <!-- ─────────────────────────────────────────
+         INSTRUÇÕES GITHUB PAGES
+    ───────────────────────────────────────────── -->
+    <div class="setup-box">
+        <h3>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--orange);flex-shrink:0;">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            Como publicar no GitHub Pages
+        </h3>
+        <div class="setup-steps">
+            <div class="setup-step">
+                <span class="step-n">01</span>
+                <div class="step-text">Crie um repositório público no GitHub com o nome <strong>seu-usuario.github.io</strong> ou qualquer nome.</div>
+            </div>
+            <div class="setup-step">
+                <span class="step-n">02</span>
+                <div class="step-text">Suba este <code class="code-inline">index.html</code> na raiz + a pasta <code class="code-inline">aulas_ia_unifil/</code> + os arquivos de atividade.</div>
+            </div>
+            <div class="setup-step">
+                <span class="step-n">03</span>
+                <div class="step-text">Em <strong>Settings → Pages</strong>, selecione a branch <code class="code-inline">main</code> e pasta <code class="code-inline">/ (root)</code>. Salve.</div>
+            </div>
+            <div class="setup-step">
+                <span class="step-n">04</span>
+                <div class="step-text">Aguarde ~2 minutos e acesse <strong>seu-usuario.github.io/nome-repo</strong>. Tudo estático, sem custo!</div>
+            </div>
+            <div class="setup-step">
+                <span class="step-n">05</span>
+                <div class="step-text">Para novas aulas, basta fazer <code class="code-inline">git push</code> — o GitHub Pages atualiza automaticamente em segundos.</div>
+            </div>
+            <div class="setup-step">
+                <span class="step-n">Dica</span>
+                <div class="step-text">Adicione um arquivo <code class="code-inline">.nojekyll</code> vazio na raiz para evitar que o GitHub processe desnecessariamente os arquivos HTML.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── EMPTY STATE ── -->
+    <div class="empty-state" id="emptyState">
+        <div class="icon">🔎</div>
+        <p>Nenhuma aula encontrada para "<strong id="searchTerm"></strong>"</p>
+    </div>
+
+</main>
+
+<!-- ══════════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════════ -->
+<footer>
+    <p>
+        <span>Prof. Tiago Dutra Galvão</span> — Centro Universitário Filadélfia (UniFil) · Londrina, Paraná<br>
+        Ciência da Computação &amp; Engenharia de Software · 2026.1<br>
+        <span style="font-size:0.72rem;color:#555566;">
+            Inteligência Artificial: Desmistificando a IA no Cotidiano
+        </span>
+    </p>
+</footer>
+
+<script>
+    // ── Contagem de aulas por disciplina ──────────────
+    document.querySelectorAll('.discipline').forEach(disc => {
+        const id    = disc.dataset.disc;
+        const total = disc.querySelectorAll('.lesson-card').length;
+        const avail = disc.querySelectorAll('.lesson-card:not(.soon)').length;
+        const el    = document.getElementById('count-' + id);
+        if (el) el.textContent = avail + ' / ' + total + ' aulas';
+    });
+
+    const totalAvail = document.querySelectorAll('.lesson-card:not(.soon)').length;
+    document.getElementById('total-count').textContent = totalAvail + ' materiais disponíveis';
+
+    // ── Busca em tempo real ──────────────────────────
+    const searchInput = document.getElementById('searchInput');
+    const emptyState  = document.getElementById('emptyState');
+    const searchTerm  = document.getElementById('searchTerm');
+
+    searchInput.addEventListener('input', () => {
+        const q = searchInput.value.toLowerCase().trim();
+        let anyVisible = false;
+
+        document.querySelectorAll('.discipline').forEach(disc => {
+            const header = disc.querySelector('.disc-info').textContent.toLowerCase();
+            let visible = false;
+
+            disc.querySelectorAll('.lesson-card').forEach(card => {
+                const match = !q
+                    || card.textContent.toLowerCase().includes(q)
+                    || header.includes(q);
+                card.classList.toggle('hidden', !match);
+                if (match) { visible = true; anyVisible = true; }
+            });
+
+            // also check section-labels
+            disc.querySelectorAll('.section-label').forEach(lbl => {
+                lbl.style.display = visible ? '' : 'none';
+            });
+
+            disc.classList.toggle('hidden', !visible);
+        });
+
+        emptyState.style.display = (!anyVisible && q) ? 'block' : 'none';
+        if (!anyVisible && q) searchTerm.textContent = searchInput.value;
+    });
+</script>
+
+</body>
+</html>

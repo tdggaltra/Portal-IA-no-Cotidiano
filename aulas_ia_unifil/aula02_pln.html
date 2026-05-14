@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aula 2 — PLN | UniFil</title>
+<style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B;
+            --ai-blue: #1565C0;
+            --ai-purple: #6A1B9A;
+            --ai-teal: #00695C;
+            --ai-green: #2E7D32;
+            --ai-red: #C62828;
+            --ai-indigo: #283593;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, var(--unifil-dark) 0%, #1a2a3a 100%); overflow: hidden; color: var(--unifil-dark); }
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+        .slide { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none; opacity: 0; transform: translateX(100%); transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+        .slide.active { display: flex; opacity: 1; transform: translateX(0); }
+        .slide.prev { transform: translateX(-100%); }
+        .slide-content { background: white; width: 90%; max-width: 1200px; height: 90%; margin: auto; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.35); display: flex; flex-direction: column; position: relative; overflow: hidden; }
+        .slide-header { background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%); padding: 28px 50px; color: white; position: relative; flex-shrink: 0; }
+        .slide-header::after { content: ''; position: absolute; bottom: -18px; left: 0; right: 0; height: 36px; background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%); clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0); }
+        .slide-header h1 { font-size: 2.2rem; margin-bottom: 8px; font-weight: 700; }
+        .slide-header h2 { font-size: 1.7rem; margin-bottom: 8px; font-weight: 600; }
+        .slide-header p { font-size: 1rem; opacity: 0.95; }
+        .slide-body { flex: 1; padding: 55px 50px 35px; overflow-y: auto; }
+        .slide-body::-webkit-scrollbar { width: 8px; }
+        .slide-body::-webkit-scrollbar-thumb { background: var(--unifil-orange); border-radius: 10px; }
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin: 20px 0; }
+        .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 22px; margin: 20px 0; }
+        .four-col { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin: 20px 0; }
+        .content-box { background: var(--unifil-light); padding: 22px; border-radius: 15px; border-left: 5px solid var(--unifil-orange); animation: fadeInUp 0.6s ease-out forwards; opacity: 0; }
+        .content-box h3 { color: var(--unifil-orange); margin-bottom: 12px; font-size: 1.2rem; }
+        .content-box ul { list-style: none; padding: 0; }
+        .content-box li { padding: 7px 0 7px 26px; position: relative; font-size: 0.97rem; line-height: 1.5; }
+        .content-box li::before { content: '→'; position: absolute; left: 0; color: var(--unifil-orange); font-weight: bold; }
+        .highlight-box { background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%); color: white; padding: 22px; border-radius: 15px; margin: 20px 0; animation: fadeInUp 0.6s ease-out 0.2s forwards; opacity: 0; }
+        .highlight-box h3 { margin-bottom: 10px; font-size: 1.4rem; }
+        .big-idea { background: linear-gradient(135deg, var(--ai-blue) 0%, var(--ai-indigo) 100%); color: white; padding: 30px; border-radius: 20px; font-size: 1.5rem; font-weight: 600; text-align: center; margin: 20px 0; animation: fadeInUp 0.6s ease-out forwards; opacity: 0; box-shadow: 0 10px 30px rgba(21,101,192,0.3); }
+        .stat-card { text-align: center; padding: 20px; background: white; border-radius: 15px; border: 3px solid var(--unifil-orange); animation: fadeInUp 0.6s ease-out forwards; opacity: 0; }
+        .stat-card .number { font-size: 2.4rem; font-weight: 700; color: var(--unifil-orange); margin-bottom: 6px; }
+        .stat-card .label { font-size: 0.95rem; color: var(--unifil-gray); font-weight: 500; }
+        .example-card { background: white; border: 2px solid var(--unifil-orange); padding: 20px; border-radius: 12px; margin: 15px 0; transition: transform 0.3s, box-shadow 0.3s; animation: fadeInUp 0.6s ease-out forwards; opacity: 0; }
+        .example-card:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(255,140,0,0.2); }
+        .example-card h4 { color: var(--unifil-orange); margin-bottom: 8px; font-size: 1.1rem; }
+        .example-card p, .example-card ul { font-size: 0.92rem; line-height: 1.55; }
+        .example-card ul { list-style: none; padding: 0; }
+        .example-card li { padding: 3px 0 3px 18px; position: relative; }
+        .example-card li::before { content: '→'; position: absolute; left: 0; color: var(--unifil-orange); }
+        .dark-box { background: #1a2a3a; color: #e6edf3; padding: 22px; border-radius: 15px; margin: 18px 0; animation: fadeInUp 0.6s ease-out forwards; opacity: 0; border-top: 4px solid var(--unifil-orange); }
+        .dark-box h3 { color: #FF8C00; margin-bottom: 12px; font-size: 1.2rem; }
+        .unidade-header { display: flex; align-items: center; gap: 16px; background: linear-gradient(135deg, #1a2a3a 0%, #1e3a5f 100%); padding: 18px 24px; border-radius: 14px; margin-bottom: 22px; animation: fadeInUp 0.6s ease-out forwards; opacity: 0; }
+        .unidade-header .icone { font-size: 2.4rem; }
+        .unidade-header h3 { color: #FF8C00; font-size: 1.4rem; margin-bottom: 3px; }
+        .unidade-header p { color: #8b949e; font-size: 0.95rem; }
+        .timeline { position: relative; padding-left: 36px; margin: 20px 0; }
+        .timeline::before { content: ''; position: absolute; left: 10px; top: 0; bottom: 0; width: 3px; background: var(--unifil-orange); }
+        .timeline-item { position: relative; padding: 14px 0; animation: fadeInLeft 0.6s ease-out forwards; opacity: 0; }
+        .timeline-item::before { content: ''; position: absolute; left: -29px; top: 20px; width: 12px; height: 12px; border-radius: 50%; background: var(--unifil-orange); border: 3px solid white; box-shadow: 0 0 0 3px var(--unifil-orange); }
+        .timeline-item h4 { color: var(--unifil-orange); font-size: 1.1rem; margin-bottom: 4px; }
+        .timeline-item p { font-size: 0.93rem; line-height: 1.5; }
+        .tip-box { background: #fff8e1; border-left: 4px solid #f59e0b; padding: 14px 20px; border-radius: 10px; margin-top: 14px; font-size: 0.95rem; }
+        .warn-box { background: #fce4ec; border-left: 4px solid #c62828; padding: 14px 20px; border-radius: 10px; margin-top: 14px; font-size: 0.95rem; }
+        .cronograma-table { width: 100%; border-collapse: collapse; margin: 16px 0; animation: fadeInUp 0.6s ease-out forwards; opacity: 0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .cronograma-table th { background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%); color: white; padding: 12px 14px; text-align: left; font-size: 0.95rem; }
+        .cronograma-table td { padding: 10px 14px; border-bottom: 1px solid #eee; font-size: 0.88rem; line-height: 1.4; vertical-align: middle; }
+        .cronograma-table tr:hover td { background: #fff8f0; }
+        .aula-num { background: var(--unifil-orange); color: white; border-radius: 50%; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; }
+        .tipo-badge { display: inline-block; padding: 2px 9px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; }
+        .tipo-teoria { background: #e3f2fd; color: #1565c0; }
+        .tipo-pratica { background: #e8f5e9; color: #2e7d32; }
+        .tipo-mista { background: #fff3e0; color: #e65100; }
+        .tipo-avaliacao { background: #fce4ec; color: #880e4f; }
+        .navigation { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; gap: 16px; align-items: center; background: rgba(255,255,255,0.96); padding: 12px 24px; border-radius: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000; }
+        .nav-button { background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%); color: white; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.3s; }
+        .nav-button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,140,0,0.4); }
+        .nav-button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .slide-counter { font-weight: 600; color: var(--unifil-dark); min-width: 70px; text-align: center; font-size: 1rem; }
+        .progress-bar { position: fixed; top: 0; left: 0; width: 100%; height: 5px; background: rgba(255,255,255,0.15); z-index: 1001; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--unifil-orange), var(--ai-blue)); transition: width 0.4s ease; }
+        .slide-dots { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 7px; z-index: 1001; }
+        .dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.35); cursor: pointer; transition: all 0.3s; }
+        .dot.active { background: var(--unifil-orange); transform: scale(1.4); }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInLeft { from { opacity: 0; transform: translateX(-26px); } to { opacity: 1; transform: translateX(0); } }
+        .delay-1 { animation-delay: 0.1s; } .delay-2 { animation-delay: 0.2s; } .delay-3 { animation-delay: 0.3s; } .delay-4 { animation-delay: 0.4s; }
+</style>
+</head>
+<body>
+<div class="progress-bar"><div class="progress-fill" id="progressBar"></div></div>
+<div class="slide-dots" id="slideDots"></div>
+<div class="presentation">
+<div class="slide active">
+  <div class="slide-content">
+    <div class="slide-header"><h1>Inteligência Artificial: Desmistificando a IA no Cotidiano</h1><p>UniFil · Ciência da Computação & Engenharia de Software · 2026.1</p></div>
+    <div class="slide-body" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+      <div style="font-size:4.5rem;margin-bottom:18px;">💬</div>
+      <h2 style="font-size:2.1rem;color:var(--unifil-orange);margin-bottom:12px;">Aula 2 — Processamento de Linguagem Natural</h2>
+      <p style="font-size:1.1rem;color:var(--unifil-gray);max-width:760px;margin-bottom:28px;line-height:1.7;">Como as máquinas entendem (ou fingem entender) o que você escreve</p>
+      <div class="four-col" style="width:100%;max-width:880px;"><div class="stat-card" style="animation-delay:0.0s"><div class="number">PLN</div><div class="label">Sigla</div></div><div class="stat-card" style="animation-delay:0.1s"><div class="number">LLMs</div><div class="label">Tecnologia</div></div><div class="stat-card" style="animation-delay:0.2s"><div class="number">3</div><div class="label">Modelos</div></div><div class="stat-card" style="animation-delay:0.30000000000000004s"><div class="number">Prática</div><div class="label">Aula</div></div></div>
+      <div style="margin-top:30px;font-size:1rem;color:var(--unifil-gray);line-height:1.8;"><p><strong>Professor:</strong> Tiago Dutra Galvão &nbsp;|&nbsp; UniFil · Londrina-PR</p><p><strong>Aula 2 de 11</strong> &nbsp;|&nbsp; <strong>Data:</strong> 07/05/2026</p></div>
+    </div>
+  </div>
+</div>
+<div class="slide">
+  <div class="slide-content">
+    <div class="slide-header"><h2>🧩 O que é PLN?</h2><p>Processamento de Linguagem Natural — fundamentos</p></div>
+    <div class="slide-body">
+<div class="big-idea" style="font-size:1.3rem;">PLN é a capacidade de computadores <strong>processarem, analisarem e gerarem texto</strong> em linguagem humana.</div>
+<div class="two-col">
+  <div class="content-box">
+    <h3>🔍 O que o PLN faz</h3>
+    <ul>
+      <li><strong>Tokenização:</strong> divide o texto em partes (tokens)</li>
+      <li><strong>Análise sintática:</strong> identifica estrutura gramatical</li>
+      <li><strong>Análise semântica:</strong> interpreta significados</li>
+      <li><strong>Reconhecimento de entidades:</strong> nomes, lugares, datas</li>
+      <li><strong>Análise de sentimento:</strong> positivo, negativo, neutro</li>
+      <li><strong>Geração de texto:</strong> produz linguagem natural</li>
+    </ul>
+  </div>
+  <div class="content-box delay-1">
+    <h3>📱 PLN no seu dia a dia</h3>
+    <ul>
+      <li>🔍 <strong>Google:</strong> entende o que você quer encontrar</li>
+      <li>📧 <strong>Gmail:</strong> respostas automáticas sugeridas</li>
+      <li>🎵 <strong>Spotify:</strong> recomendações por descrição</li>
+      <li>🤖 <strong>ChatGPT:</strong> conversa natural</li>
+      <li>🌍 <strong>Google Translate:</strong> tradução automática</li>
+      <li>📞 <strong>SAC virtual:</strong> chatbots de atendimento</li>
+    </ul>
+  </div>
+</div>
+</div>
+  </div>
+</div>
+<div class="slide">
+  <div class="slide-content">
+    <div class="slide-header"><h2>🔢 Tokens: como a IA lê texto</h2><p>A menor unidade de processamento de linguagem</p></div>
+    <div class="slide-body">
+<div class="unidade-header"><div class="icone">🧱</div><div><h3>Tokenização na Prática</h3><p>A IA não lê palavras — ela lê fragmentos chamados tokens</p></div></div>
+<div class="two-col">
+  <div class="content-box">
+    <h3>📖 O que são tokens?</h3>
+    <ul>
+      <li>Pedaços de texto: palavras, sílabas ou caracteres</li>
+      <li><em>"inteligência"</em> pode virar 3-4 tokens</li>
+      <li>Espaços e pontuação também são tokens</li>
+      <li><strong>GPT-4:</strong> janela de contexto de ~128k tokens</li>
+      <li>≈ 1 token = 0,75 palavras em inglês (mais em português)</li>
+    </ul>
+  </div>
+  <div class="content-box delay-1">
+    <h3>💡 Por que isso importa?</h3>
+    <ul>
+      <li>Modelos têm <strong>limite de tokens</strong> por conversa</li>
+      <li>Texto mais longo = mais caro e mais lento</li>
+      <li>A IA "esquece" o que veio antes da janela de contexto</li>
+      <li>Prompts eficientes usam menos tokens sem perder clareza</li>
+    </ul>
+  </div>
+</div>
+<div class="dark-box">
+  <h3>🔗 Ferramenta para visualizar tokens</h3>
+  <p style="font-size:0.95rem;margin-top:8px;line-height:1.7;">Acesse <strong style="color:#FF8C00;">platform.openai.com/tokenizer</strong> e cole qualquer texto para ver como ele é tokenizado. Experimente em português e inglês!</p>
+</div>
+</div>
+  </div>
+</div>
+<div class="slide">
+  <div class="slide-content">
+    <div class="slide-header"><h2>🤖 Os Grandes Modelos de Linguagem</h2><p>ChatGPT, Claude e Gemini — conheça os players</p></div>
+    <div class="slide-body">
+<div class="three-col">
+  <div class="example-card" style="border-color:#10a37f;">
+    <h4 style="color:#10a37f;">🟢 ChatGPT (OpenAI)</h4>
+    <ul>
+      <li><strong>GPT-4o:</strong> multimodal (texto, imagem, voz)</li>
+      <li>Canvas: edição colaborativa de texto e código</li>
+      <li>Deep Research: pesquisa na web automatizada</li>
+      <li>Operator: executa tarefas online</li>
+      <li>Versão gratuita: GPT-4o mini</li>
+    </ul>
+  </div>
+  <div class="example-card delay-1" style="border-color:#d4a017;">
+    <h4 style="color:#d4a017;">🟡 Claude (Anthropic)</h4>
+    <ul>
+      <li><strong>Claude 3.7 Sonnet:</strong> foco em raciocínio</li>
+      <li>Excelente para código e análise longa</li>
+      <li>Janela de contexto enorme (200k tokens)</li>
+      <li>Mais cuidadoso em respostas sensíveis</li>
+      <li>Versão gratuita disponível</li>
+    </ul>
+  </div>
+  <div class="example-card delay-2" style="border-color:#4285F4;">
+    <h4 style="color:#4285F4;">🔵 Gemini (Google)</h4>
+    <ul>
+      <li><strong>Gemini 2.0 Flash:</strong> velocidade e custo</li>
+      <li>Integração nativa com Google Workspace</li>
+      <li>NotebookLM: análise de documentos</li>
+      <li>Busca em tempo real integrada</li>
+      <li>Versão gratuita disponível</li>
+    </ul>
+  </div>
+</div>
+<div class="highlight-box" style="margin-top:12px;">
+  <h3>💡 Qual usar?</h3>
+  <p style="font-size:0.97rem;margin-top:8px;line-height:1.7;">Não existe "o melhor" — depende da tarefa! Use <strong>ChatGPT</strong> para criatividade e multimodal, <strong>Claude</strong> para análise profunda e código, <strong>Gemini</strong> para integrar com Google. Teste todos!</p>
+</div>
+</div>
+  </div>
+</div>
+<div class="slide">
+  <div class="slide-content">
+    <div class="slide-header"><h2>📝 Principais Aplicações de PLN</h2><p>O que você pode fazer com essas ferramentas hoje</p></div>
+    <div class="slide-body">
+<div class="two-col">
+  <div>
+    <div class="content-box">
+      <h3>✍️ Geração e Edição de Texto</h3>
+      <ul>
+        <li>Redigir e-mails, relatórios, artigos</li>
+        <li>Corrigir gramática e melhorar redação</li>
+        <li>Adaptar tom (formal, casual, técnico)</li>
+        <li>Traduzir textos com contexto cultural</li>
+        <li>Gerar legendas e roteiros</li>
+      </ul>
+    </div>
+    <div class="content-box delay-2" style="margin-top:15px;">
+      <h3>🔍 Análise e Extração</h3>
+      <ul>
+        <li>Resumir documentos longos</li>
+        <li>Extrair informações de PDFs e sites</li>
+        <li>Analisar sentimento de avaliações</li>
+        <li>Classificar textos por tema</li>
+        <li>Responder perguntas sobre documentos</li>
+      </ul>
+    </div>
+  </div>
+  <div>
+    <div class="content-box delay-1">
+      <h3>💻 Código e Tecnologia</h3>
+      <ul>
+        <li>Gerar código em qualquer linguagem</li>
+        <li>Explicar e comentar código existente</li>
+        <li>Depurar erros (debug)</li>
+        <li>Converter entre linguagens</li>
+        <li>Criar documentação técnica</li>
+      </ul>
+    </div>
+    <div class="content-box delay-3" style="margin-top:15px;">
+      <h3>🎓 Estudo e Pesquisa</h3>
+      <ul>
+        <li>Explicar conceitos difíceis de formas diferentes</li>
+        <li>Criar flashcards e quizzes de revisão</li>
+        <li>Sumarizar artigos científicos</li>
+        <li>Brainstorm de ideias para projetos</li>
+        <li>Tutoria personalizada 24h</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</div>
+  </div>
+</div>
+<div class="slide">
+  <div class="slide-content">
+    <div class="slide-header"><h2>⚠️ Limitações dos LLMs</h2><p>O que a IA não sabe e quando ela falha</p></div>
+    <div class="slide-body">
+<div class="three-col">
+  <div class="example-card" style="border-color:var(--ai-red);">
+    <h4 style="color:var(--ai-red);">🌀 Alucinações</h4>
+    <p>A IA pode <strong>inventar fatos</strong> com confiança total. Citar papers que não existem, datas erradas, nomes inventados.</p>
+    <div class="tip-box" style="margin-top:8px;font-size:0.85rem;"><strong>Regra:</strong> Nunca confie em fatos específicos sem verificar!</div>
+  </div>
+  <div class="example-card delay-1" style="border-color:#f59e0b;">
+    <h4 style="color:#b45309;">⏰ Data de Corte</h4>
+    <p>LLMs têm um <strong>knowledge cutoff</strong> — não sabem de eventos recentes. ChatGPT tem corte em jan/2025; Claude em out/2024.</p>
+    <div class="tip-box" style="margin-top:8px;font-size:0.85rem;"><strong>Dica:</strong> Use modelos com busca na web para informações atuais!</div>
+  </div>
+  <div class="example-card delay-2" style="border-color:var(--ai-purple);">
+    <h4 style="color:var(--ai-purple);">⚖️ Vieses</h4>
+    <p>Treinados em dados humanos, LLMs podem <strong>reproduzir preconceitos</strong> culturais, de gênero, raça e visão de mundo ocidental.</p>
+    <div class="tip-box" style="margin-top:8px;font-size:0.85rem;"><strong>Atenção:</strong> Questione respostas sobre grupos ou culturas!</div>
+  </div>
+</div>
+<div class="dark-box" style="margin-top:12px;">
+  <h3>🎯 Uso responsável = usar sabendo das limitações</h3>
+  <p style="font-size:0.95rem;line-height:1.7;margin-top:8px;">A IA é uma <strong style="color:#FF8C00;">ferramenta poderosa</strong> para quem sabe usá-la. Use como primeiro rascunho, assistente de brainstorm e acelerador — não como oráculo infalível.</p>
+</div>
+</div>
+  </div>
+</div>
+<div class="slide">
+  <div class="slide-content">
+    <div class="slide-header"><h2>📊 Demonstração ao Vivo: NotebookLM</h2><p>IA que lê e analisa seus documentos</p></div>
+    <div class="slide-body">
+<div class="unidade-header"><div class="icone">📚</div><div><h3>Google NotebookLM</h3><p>notebooklm.google.com — transforme documentos em conhecimento</p></div></div>
+<div class="two-col">
+  <div class="content-box">
+    <h3>🔧 O que o NotebookLM faz</h3>
+    <ul>
+      <li>Ingere PDFs, artigos, slides, sites e textos</li>
+      <li>Responde perguntas <strong>com base nos seus docs</strong></li>
+      <li>Gera resumos e FAQs automáticos</li>
+      <li>Cria <strong>podcast de áudio</strong> a partir dos documentos!</li>
+      <li>Cita a fonte de cada resposta</li>
+      <li>Totalmente gratuito</li>
+    </ul>
+  </div>
+  <div class="content-box delay-1">
+    <h3>🚀 Como usar na prática</h3>
+    <ul>
+      <li>Envie artigos científicos → pergunte o essencial</li>
+      <li>Carregue a apostila da disciplina → tire dúvidas</li>
+      <li>Adicione documentos de empresa → consulte políticas</li>
+      <li>Use para revisar para provas com perguntas e respostas</li>
+    </ul>
+  </div>
+</div>
+<div class="highlight-box">
+  <h3>🔬 Atividade Prática — Agora!</h3>
+  <p style="font-size:0.97rem;margin-top:8px;line-height:1.7;">Acesse <strong>notebooklm.google.com</strong>, crie um notebook novo, adicione um PDF ou artigo à sua escolha e faça 3 perguntas diferentes sobre ele. Compare as respostas com o texto original!</p>
+</div>
+</div>
+  </div>
+</div>
+<div class="slide">
+  <div class="slide-content">
+    <div class="slide-header"><h2>🔬 Atividade Prática — Aula 2</h2><p>Explorando PLN com ferramentas reais</p></div>
+    <div class="slide-body">
+<div class="three-col">
+  <div class="example-card" style="border-color:var(--ai-green);">
+    <h4 style="color:var(--ai-green);">Desafio 1 — Tradutor com Contexto</h4>
+    <p style="font-size:0.9rem;line-height:1.6;margin-bottom:8px;">Peça ao ChatGPT para traduzir o mesmo parágrafo para inglês de 3 formas:</p>
+    <ul><li>Tradução formal/acadêmica</li><li>Tradução casual/coloquial</li><li>Tradução para negócios</li></ul>
+    <p style="font-size:0.85rem;color:var(--unifil-gray);margin-top:8px;">Compare as diferenças!</p>
+  </div>
+  <div class="example-card delay-1" style="border-color:var(--ai-blue);">
+    <h4 style="color:var(--ai-blue);">Desafio 2 — Análise de Sentimento</h4>
+    <p style="font-size:0.9rem;line-height:1.6;margin-bottom:8px;">Cole 5 avaliações de produto (podem ser do Mercado Livre) e peça para a IA:</p>
+    <ul><li>Classificar como positivo/negativo/neutro</li><li>Resumir os principais pontos</li><li>Sugerir melhorias ao produto</li></ul>
+  </div>
+  <div class="example-card delay-2" style="border-color:var(--ai-purple);">
+    <h4 style="color:var(--ai-purple);">Desafio 3 — Resumo Acadêmico</h4>
+    <p style="font-size:0.9rem;line-height:1.6;margin-bottom:8px;">Acesse o NotebookLM, carregue um artigo da área de TI e peça:</p>
+    <ul><li>Resumo em 5 pontos</li><li>3 perguntas de prova sobre o texto</li><li>Gerar o áudio-resumo</li></ul>
+  </div>
+</div>
+<div class="dark-box" style="margin-top:12px;">
+  <h3>🏠 Tarefa para casa — Trabalho Prático 1</h3>
+  <p style="font-size:0.93rem;line-height:1.7;margin-top:8px;"><strong>Entrega: 21/05 (Aula 4)</strong> · Use um LLM para resolver um problema real da sua rotina acadêmica ou profissional. Documente o processo: qual foi o problema, quais prompts usou, qual foi o resultado e o que funcionou ou não funcionou.</p>
+</div>
+</div>
+  </div>
+</div>
+</div>
+<div class="navigation">
+    <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+    <span class="slide-counter" id="slideCounter">1 / 8</span>
+    <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+</div>
+<script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    const dotsContainer = document.getElementById('slideDots');
+    for (let i = 0; i < totalSlides; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'dot' + (i === 0 ? ' active' : '');
+        dot.onclick = () => showSlide(i);
+        dotsContainer.appendChild(dot);
+    }
+    function showSlide(n) {
+        slides.forEach(s => s.classList.remove('active', 'prev'));
+        currentSlide = (n + totalSlides) % totalSlides;
+        slides[currentSlide].classList.add('active');
+        document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+        document.getElementById('prevBtn').disabled = currentSlide === 0;
+        document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        document.getElementById('progressBar').style.width = ((currentSlide + 1) / totalSlides * 100) + '%';
+        document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === currentSlide));
+        const animated = slides[currentSlide].querySelectorAll('.content-box,.example-card,.highlight-box,.big-idea,.timeline-item,.stat-card,.dark-box,.unidade-header,.cronograma-table');
+        animated.forEach(el => { el.style.animation = 'none'; el.style.opacity = '0'; void el.offsetWidth; el.style.animation = ''; });
+    }
+    function changeSlide(dir) { const next = currentSlide + dir; if (next >= 0 && next < totalSlides) showSlide(next); }
+    document.addEventListener('keydown', e => { if (e.key === 'ArrowLeft') changeSlide(-1); if (e.key === 'ArrowRight') changeSlide(1); });
+    let touchStartX = 0;
+    document.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX);
+    document.addEventListener('touchend', e => { const dx = e.changedTouches[0].screenX - touchStartX; if (dx < -50) changeSlide(1); if (dx > 50) changeSlide(-1); });
+    showSlide(0);
+</script>
+</body>
+</html>

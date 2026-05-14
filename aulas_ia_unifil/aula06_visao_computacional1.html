@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aula 6 — Visão Computacional | UniFil</title>
+<style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --unifil-orange: #FF8C00; --unifil-dark: #4A4A4A; --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35; --unifil-gray: #6B6B6B;
+            --ai-blue: #1565C0; --ai-purple: #6A1B9A; --ai-teal: #00695C;
+            --ai-green: #2E7D32; --ai-red: #C62828; --ai-indigo: #283593;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, var(--unifil-dark) 0%, #1a2a3a 100%); overflow: hidden; color: var(--unifil-dark); }
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+        .slide { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none; opacity: 0; transform: translateX(100%); transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+        .slide.active { display: flex; opacity: 1; transform: translateX(0); }
+        .slide.prev { transform: translateX(-100%); }
+        .slide-content { background: white; width: 90%; max-width: 1200px; height: 90%; margin: auto; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.35); display: flex; flex-direction: column; position: relative; overflow: hidden; }
+        .slide-header { background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%); padding: 28px 50px; color: white; position: relative; flex-shrink: 0; }
+        .slide-header::after { content: ''; position: absolute; bottom: -18px; left: 0; right: 0; height: 36px; background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%); clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0); }
+        .slide-header h1 { font-size: 2.2rem; margin-bottom: 8px; font-weight: 700; }
+        .slide-header h2 { font-size: 1.7rem; margin-bottom: 8px; font-weight: 600; }
+        .slide-header p { font-size: 1rem; opacity: 0.95; }
+        .slide-body { flex: 1; padding: 55px 50px 35px; overflow-y: auto; }
+        .slide-body::-webkit-scrollbar { width: 8px; }
+        .slide-body::-webkit-scrollbar-thumb { background: var(--unifil-orange); border-radius: 10px; }
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin: 20px 0; }
+        .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 22px; margin: 20px 0; }
+        .four-col { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin: 20px 0; }
+        .content-box { background: var(--unifil-light); padding: 22px; border-radius: 15px; border-left: 5px solid var(--unifil-orange); animation: fadeInUp 0.6s ease-out forwards; opacity: 0; }
+        .content-box h3 { color: var(--unifil-orange); margin-bottom: 12px; font-size: 1.2rem; }
+        .content-box ul { list-style: none; padding: 0; }
+        .content-box li { padding: 7px 0 7px 26px; position: relative; font-size: 0.97rem; line-height: 1.5; }
+        .content-box li::before { content: '→'; position: absolute; left: 0; color: var(--unifil-orange); font-weight: bold; }
+        .highlight-box { background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%); color: white; padding: 22px; border-radius: 15px; margin: 20px 0; animation: fadeInUp 0.6s ease-out 0.2s forwards; opacity: 0; }
+        .highlight-box h3 { margin-bottom: 10px; font-size: 1.4rem; }
+        .big-idea { background: linear-gradient(135deg, var(--ai-blue) 0%, var(--ai-indigo) 100%); color: white; padding: 30px; border-radius: 20px; font-size: 1.5rem; font-weight: 600; text-align: center; margin: 20px 0; animation: fadeInUp 0.6s ease-out forwards; opacity: 0; box-shadow: 0 10px 30px rgba(21,101,192,0.3); }
+        .stat-card { text-align: center; padding: 20px; background: white; border-radius: 15px; border: 3px solid var(--unifil-orange); animation: fadeInUp 0.6s ease-out forwards; opacity: 0; }
+        .stat-card .number { font-size: 2.4rem; font-weight: 700; color: var(--unifil-orange); margin-bottom: 6px; }
+        .stat-card .label { font-size: 0.95rem; color: var(--unifil-gray); font-weight: 500; }
+        .example-card { background: white; border: 2px solid var(--unifil-orange); padding: 20px; border-radius: 12px; margin: 15px 0; transition: transform 0.3s, box-shadow 0.3s; animation: fadeInUp 0.6s ease-out forwards; opacity: 0; }
+        .example-card:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(255,140,0,0.2); }
+        .example-card h4 { color: var(--unifil-orange); margin-bottom: 8px; font-size: 1.1rem; }
+        .example-card p, .example-card ul { font-size: 0.92rem; line-height: 1.55; }
+        .example-card ul { list-style: none; padding: 0; }
+        .example-card li { padding: 3px 0 3px 18px; position: relative; }
+        .example-card li::before { content: '→'; position: absolute; left: 0; color: var(--unifil-orange); }
+        .dark-box { background: #1a2a3a; color: #e6edf3; padding: 22px; border-radius: 15px; margin: 18px 0; animation: fadeInUp 0.6s ease-out forwards; opacity: 0; border-top: 4px solid var(--unifil-orange); }
+        .dark-box h3 { color: #FF8C00; margin-bottom: 12px; font-size: 1.2rem; }
+        .unidade-header { display: flex; align-items: center; gap: 16px; background: linear-gradient(135deg, #1a2a3a 0%, #1e3a5f 100%); padding: 18px 24px; border-radius: 14px; margin-bottom: 22px; animation: fadeInUp 0.6s ease-out forwards; opacity: 0; }
+        .unidade-header .icone { font-size: 2.4rem; }
+        .unidade-header h3 { color: #FF8C00; font-size: 1.4rem; margin-bottom: 3px; }
+        .unidade-header p { color: #8b949e; font-size: 0.95rem; }
+        .timeline { position: relative; padding-left: 36px; margin: 20px 0; }
+        .timeline::before { content: ''; position: absolute; left: 10px; top: 0; bottom: 0; width: 3px; background: var(--unifil-orange); }
+        .timeline-item { position: relative; padding: 14px 0; animation: fadeInLeft 0.6s ease-out forwards; opacity: 0; }
+        .timeline-item::before { content: ''; position: absolute; left: -29px; top: 20px; width: 12px; height: 12px; border-radius: 50%; background: var(--unifil-orange); border: 3px solid white; box-shadow: 0 0 0 3px var(--unifil-orange); }
+        .timeline-item h4 { color: var(--unifil-orange); font-size: 1.1rem; margin-bottom: 4px; }
+        .timeline-item p { font-size: 0.93rem; line-height: 1.5; }
+        .tip-box { background: #fff8e1; border-left: 4px solid #f59e0b; padding: 14px 20px; border-radius: 10px; margin-top: 14px; font-size: 0.95rem; }
+        .warn-box { background: #fce4ec; border-left: 4px solid #c62828; padding: 14px 20px; border-radius: 10px; margin-top: 14px; font-size: 0.95rem; }
+        .navigation { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; gap: 16px; align-items: center; background: rgba(255,255,255,0.96); padding: 12px 24px; border-radius: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000; }
+        .nav-button { background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%); color: white; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.3s; }
+        .nav-button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,140,0,0.4); }
+        .nav-button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .slide-counter { font-weight: 600; color: var(--unifil-dark); min-width: 70px; text-align: center; font-size: 1rem; }
+        .progress-bar { position: fixed; top: 0; left: 0; width: 100%; height: 5px; background: rgba(255,255,255,0.15); z-index: 1001; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--unifil-orange), var(--ai-blue)); transition: width 0.4s ease; }
+        .slide-dots { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 7px; z-index: 1001; }
+        .dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.35); cursor: pointer; transition: all 0.3s; }
+        .dot.active { background: var(--unifil-orange); transform: scale(1.4); }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInLeft { from { opacity: 0; transform: translateX(-26px); } to { opacity: 1; transform: translateX(0); } }
+        .delay-1 { animation-delay: 0.1s; } .delay-2 { animation-delay: 0.2s; } .delay-3 { animation-delay: 0.3s; } .delay-4 { animation-delay: 0.4s; }
+</style>
+</head>
+<body>
+<div class="progress-bar"><div class="progress-fill" id="progressBar"></div></div>
+<div class="slide-dots" id="slideDots"></div>
+<div class="presentation">
+<div class="slide active">
+  <div class="slide-content">
+    <div class="slide-header"><h1>Intelig&#234;ncia Artificial: Desmistificando a IA no Cotidiano</h1><p>UniFil &middot; Ci&#234;ncia da Computa&#231;&#227;o &amp; Engenharia de Software &middot; 2026.1</p></div>
+    <div class="slide-body" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+      <div style="font-size:4.5rem;margin-bottom:18px;">&#128065;&#65039;</div>
+      <h2 style="font-size:2rem;color:var(--unifil-orange);margin-bottom:12px;">Aula 6 &mdash; Vis&atilde;o Computacional na Pr&aacute;tica</h2>
+      <p style="font-size:1.1rem;color:var(--unifil-gray);max-width:760px;margin-bottom:28px;line-height:1.7;">Como a IA enxerga o mundo &mdash; e o que d&aacute; para fazer com isso hoje</p>
+      <div class="four-col" style="width:100%;max-width:880px;"><div class="stat-card" style="animation-delay:0.0s"><div class="number">Teachable</div><div class="label">Machine</div></div><div class="stat-card" style="animation-delay:0.1s"><div class="number">OCR</div><div class="label">Texto em Imagem</div></div><div class="stat-card" style="animation-delay:0.2s"><div class="number">YOLO</div><div class="label">Detec&ccedil;&atilde;o</div></div><div class="stat-card" style="animation-delay:0.30000000000000004s"><div class="number">Zero</div><div class="label">C&oacute;digo</div></div></div>
+      <div style="margin-top:30px;font-size:1rem;color:var(--unifil-gray);line-height:1.8;">
+        <p><strong>Professor:</strong> Tiago Dutra Galvão &nbsp;|&nbsp; UniFil &middot; Londrina-PR</p>
+        <p><strong>Aula 6 de 11</strong> &nbsp;|&nbsp; <strong>Data:</strong> 04/06/2026</p>
+      </div>
+    </div>
+  </div>
+</div><div class="slide">
+  <div class="slide-content">
+    <div class="slide-header"><h2>&#128065;&#65039; O que &eacute; Vis&atilde;o Computacional?</h2><p>Como a IA &ldquo;v&ecirc;&rdquo;</p></div>
+    <div class="slide-body"><div class="big-idea">Vis&atilde;o Computacional ensina m&aacute;quinas a <strong>interpretar e entender imagens e v&iacute;deos</strong> &mdash; do reconhecimento facial ao diagn&oacute;stico m&eacute;dico.</div><div class="two-col"><div class="content-box "><h3>&#128269; Tarefas Principais</h3><ul><li><strong>Classifica&ccedil;&atilde;o:</strong> &ldquo;&eacute; um gato ou cachorro?&rdquo;</li><li><strong>Detec&ccedil;&atilde;o:</strong> onde est&atilde;o os objetos na imagem?</li><li><strong>Segmenta&ccedil;&atilde;o:</strong> delimitar contornos pixel a pixel</li><li><strong>OCR:</strong> reconhecer texto em imagens</li><li><strong>Pose estimation:</strong> detectar posi&ccedil;&atilde;o do corpo</li><li><strong>Reconhecimento facial:</strong> identificar pessoas</li></ul></div><div class="content-box delay-1"><h3>&#128187; Aplica&ccedil;&otilde;es no dia a dia</h3><ul><li>Desbloqueio por reconhecimento facial (celular)</li><li>Filtros de realidade aumentada (Instagram, Snapchat)</li><li>Carros aut&ocirc;nomos identificando objetos</li><li>Caixas de supermercado sem atendente</li><li>Controle de qualidade em f&aacute;bricas</li><li>Diagn&oacute;stico m&eacute;dico por imagens de raio-X</li></ul></div></div></div>
+  </div>
+</div><div class="slide">
+  <div class="slide-content">
+    <div class="slide-header"><h2>&#128295; Teachable Machine</h2><p>Crie seu pr&oacute;prio modelo de vis&atilde;o sem c&oacute;digo</p></div>
+    <div class="slide-body"><div class="unidade-header"><div class="icone">&#127803;</div><div><h3>Google Teachable Machine</h3><p>teachablemachine.withgoogle.com &mdash; totalmente gratuito e no browser</p></div></div><div class="two-col"><div class="content-box "><h3>&#9989; O que d&aacute; para fazer</h3><ul><li>Treinar classificador de <strong>imagens, sons ou poses</strong></li><li>Coletar exemplos com a webcam em tempo real</li><li>Testar o modelo na hora, ainda no browser</li><li>Exportar para TensorFlow.js, TFLite ou Keras</li><li>Integrar em sites e apps facilmente</li></ul></div><div class="content-box delay-1"><h3>&#127918; Casos de uso pr&aacute;ticos</h3><ul><li>Detectar se aluno est&aacute; com m&aacute;scara ou n&atilde;o</li><li>Identificar gestos de m&atilde;o para controlar algo</li><li>Reconhecer frutas ou objetos espec&iacute;ficos</li><li>Classificar qualidade de produtos na linha de produ&ccedil;&atilde;o</li><li>Criar jogo controlado por express&atilde;o facial</li></ul></div></div><div class="dark-box"><h3>&#127803; Limite importante</h3><p style="font-size:0.93rem;line-height:1.7;margin-top:8px;">O Teachable Machine &eacute; &oacute;timo para <strong style='color:#FF8C00;'>prototipa&ccedil;&atilde;o r&aacute;pida</strong>, mas n&atilde;o para produ&ccedil;&atilde;o. Para soluções robustas, use YOLO, TensorFlow ou servi&ccedil;os cloud como Google Cloud Vision ou AWS Rekognition.</p></div></div>
+  </div>
+</div><div class="slide">
+  <div class="slide-content">
+    <div class="slide-header"><h2>&#128248; Ferramentas de Vis&atilde;o com IA</h2><p>Do gratuito ao profissional</p></div>
+    <div class="slide-body"><div class="three-col"><div class="example-card " style="border-color:var(--ai-blue);"><h4 style="color:var(--ai-blue);">&#128266; Google Cloud Vision</h4><ul><li>API de vis&atilde;o computacional</li><li>Detecta objetos, rostos, texto, logos</li><li>R&oacute;tulos autom&aacute;ticos em imagens</li><li>Moderação de conte&uacute;do</li><li>1.000 requisi&ccedil;&otilde;es gratuitas/m&ecirc;s</li></ul></div><div class="example-card delay-1" style="border-color:#10a37f;"><h4 style="color:#10a37f;">&#128203; GPT-4o Vision</h4><ul><li>Analisa qualquer imagem enviada ao ChatGPT</li><li>Responde perguntas sobre o conte&uacute;do</li><li>Descreve cenas, objetos, textos</li><li>Interpreta gr&aacute;ficos, tabelas, equa&ccedil;&otilde;es</li><li>Totalmente dispon&iacute;vel no plano gratuito!</li></ul></div><div class="example-card delay-2" style="border-color:var(--ai-teal);"><h4 style="color:var(--ai-teal);">&#128246; Roboflow</h4><ul><li>Plataforma para treinar detectores de objetos</li><li>Dataset annotation integrado</li><li>Treinamento na nuvem sem configura&ccedil;&atilde;o</li><li>Deploy em API ou dispositivos edge</li><li>Plano gratuito para projetos acad&ecirc;micos</li></ul></div></div><div class="highlight-box"><h3>&#128161; Dica pr&aacute;tica</h3><p style="font-size:0.97rem;margin-top:8px;line-height:1.7;">Para come&ccedil;ar hoje: use o <strong>ChatGPT</strong> enviando uma imagem e fazendo perguntas sobre ela. &Eacute; gratuito e funciona incrivelmente bem para an&aacute;lise r&aacute;pida de imagens.</p></div></div>
+  </div>
+</div><div class="slide">
+  <div class="slide-content">
+    <div class="slide-header"><h2>&#128300; Laborat&oacute;rio &mdash; Aula 6</h2><p>Treinando nosso pr&oacute;prio modelo de vis&atilde;o</p></div>
+    <div class="slide-body"><div class="unidade-header"><div class="icone">&#127803;</div><div><h3>Hora de Treinar!</h3><p>Cada grupo vai criar um modelo de classifica&ccedil;&atilde;o de imagens</p></div></div><div class="two-col"><div class="example-card " style="border-color:var(--ai-green);"><h4 style="color:var(--ai-green);">&#128203; Passo a passo</h4><ul><li>Acesse teachablemachine.withgoogle.com</li><li>Crie projeto &ldquo;Image Project&rdquo; &mdash; Standard model</li><li>Crie 3 classes com pelo menos 40 fotos cada</li><li>Use a webcam para coletar os exemplos</li><li>Treine o modelo e teste em tempo real</li><li>Exporte e integre em uma p&aacute;gina HTML simples!</li></ul></div><div class="example-card delay-1" style="border-color:var(--ai-blue);"><h4 style="color:var(--ai-blue);">&#127919; Sugest&otilde;es de Projetos</h4><ul><li><strong>Linguagem de sinais:</strong> A, B, C em Libras</li><li><strong>Emo&ccedil;&otilde;es faciais:</strong> feliz, triste, surpreso</li><li><strong>Gestos:</strong> polegar cima, baixo, certo com dedos</li><li><strong>Objetos de mesa:</strong> caneta, t&eacute;lefone, livro</li><li><strong>Livre:</strong> o que a equipe escolher!</li></ul></div></div><div class="highlight-box"><h3>&#128640; Trabalho Pr&aacute;tico 2</h3><p style="font-size:0.97rem;margin-top:8px;line-height:1.7;"><strong>Entrega: 11/06 (Aula 7)!</strong> Desenvolva uma solu&ccedil;&atilde;o usando vis&atilde;o computacional, voz ou ambos. Pode ser um detector, classificador, transcritor ou outra aplica&ccedil;&atilde;o. Documente o processo e prepare uma demonstra&ccedil;&atilde;o.</p></div></div>
+  </div>
+</div>
+</div>
+<div class="navigation">
+    <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">&#8592; Anterior</button>
+    <span class="slide-counter" id="slideCounter">1 / 5</span>
+    <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Pr&#243;ximo &#8594;</button>
+</div>
+<script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    const dotsContainer = document.getElementById('slideDots');
+    for (let i = 0; i < totalSlides; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'dot' + (i === 0 ? ' active' : '');
+        dot.onclick = () => showSlide(i);
+        dotsContainer.appendChild(dot);
+    }
+    function showSlide(n) {
+        slides.forEach(s => s.classList.remove('active', 'prev'));
+        currentSlide = (n + totalSlides) % totalSlides;
+        slides[currentSlide].classList.add('active');
+        document.getElementById('slideCounter').textContent = (currentSlide + 1) + ' / ' + totalSlides;
+        document.getElementById('prevBtn').disabled = currentSlide === 0;
+        document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        document.getElementById('progressBar').style.width = ((currentSlide + 1) / totalSlides * 100) + '%';
+        document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === currentSlide));
+        const animated = slides[currentSlide].querySelectorAll('.content-box,.example-card,.highlight-box,.big-idea,.timeline-item,.stat-card,.dark-box,.unidade-header');
+        animated.forEach(el => { el.style.animation = 'none'; el.style.opacity = '0'; void el.offsetWidth; el.style.animation = ''; });
+    }
+    function changeSlide(dir) { const next = currentSlide + dir; if (next >= 0 && next < totalSlides) showSlide(next); }
+    document.addEventListener('keydown', e => { if (e.key === 'ArrowLeft') changeSlide(-1); if (e.key === 'ArrowRight') changeSlide(1); });
+    let touchStartX = 0;
+    document.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX);
+    document.addEventListener('touchend', e => { const dx = e.changedTouches[0].screenX - touchStartX; if (dx < -50) changeSlide(1); if (dx > 50) changeSlide(-1); });
+    showSlide(0);
+</script>
+</body>
+</html>

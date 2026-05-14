@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aula 1 — Introdução à IA | UniFil</title>
+<style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B;
+            --ai-blue: #1565C0;
+            --ai-purple: #6A1B9A;
+            --ai-teal: #00695C;
+            --ai-green: #2E7D32;
+            --ai-red: #C62828;
+            --ai-indigo: #283593;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, var(--unifil-dark) 0%, #1a2a3a 100%); overflow: hidden; color: var(--unifil-dark); }
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+        .slide { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none; opacity: 0; transform: translateX(100%); transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+        .slide.active { display: flex; opacity: 1; transform: translateX(0); }
+        .slide.prev { transform: translateX(-100%); }
+        .slide-content { background: white; width: 90%; max-width: 1200px; height: 90%; margin: auto; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.35); display: flex; flex-direction: column; position: relative; overflow: hidden; }
+        .slide-header { background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%); padding: 28px 50px; color: white; position: relative; flex-shrink: 0; }
+        .slide-header::after { content: ''; position: absolute; bottom: -18px; left: 0; right: 0; height: 36px; background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%); clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0); }
+        .slide-header h1 { font-size: 2.2rem; margin-bottom: 8px; font-weight: 700; }
+        .slide-header h2 { font-size: 1.7rem; margin-bottom: 8px; font-weight: 600; }
+        .slide-header p { font-size: 1rem; opacity: 0.95; }
+        .slide-body { flex: 1; padding: 55px 50px 35px; overflow-y: auto; }
+        .slide-body::-webkit-scrollbar { width: 8px; }
+        .slide-body::-webkit-scrollbar-thumb { background: var(--unifil-orange); border-radius: 10px; }
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin: 20px 0; }
+        .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 22px; margin: 20px 0; }
+        .four-col { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin: 20px 0; }
+        .content-box { background: var(--unifil-light); padding: 22px; border-radius: 15px; border-left: 5px solid var(--unifil-orange); animation: fadeInUp 0.6s ease-out forwards; opacity: 0; }
+        .content-box h3 { color: var(--unifil-orange); margin-bottom: 12px; font-size: 1.2rem; }
+        .content-box ul { list-style: none; padding: 0; }
+        .content-box li { padding: 7px 0 7px 26px; position: relative; font-size: 0.97rem; line-height: 1.5; }
+        .content-box li::before { content: '→'; position: absolute; left: 0; color: var(--unifil-orange); font-weight: bold; }
+        .highlight-box { background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%); color: white; padding: 22px; border-radius: 15px; margin: 20px 0; animation: fadeInUp 0.6s ease-out 0.2s forwards; opacity: 0; }
+        .highlight-box h3 { margin-bottom: 10px; font-size: 1.4rem; }
+        .big-idea { background: linear-gradient(135deg, var(--ai-blue) 0%, var(--ai-indigo) 100%); color: white; padding: 30px; border-radius: 20px; font-size: 1.5rem; font-weight: 600; text-align: center; margin: 20px 0; animation: fadeInUp 0.6s ease-out forwards; opacity: 0; box-shadow: 0 10px 30px rgba(21,101,192,0.3); }
+        .stat-card { text-align: center; padding: 20px; background: white; border-radius: 15px; border: 3px solid var(--unifil-orange); animation: fadeInUp 0.6s ease-out forwards; opacity: 0; }
+        .stat-card .number { font-size: 2.4rem; font-weight: 700; color: var(--unifil-orange); margin-bottom: 6px; }
+        .stat-card .label { font-size: 0.95rem; color: var(--unifil-gray); font-weight: 500; }
+        .example-card { background: white; border: 2px solid var(--unifil-orange); padding: 20px; border-radius: 12px; margin: 15px 0; transition: transform 0.3s, box-shadow 0.3s; animation: fadeInUp 0.6s ease-out forwards; opacity: 0; }
+        .example-card:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(255,140,0,0.2); }
+        .example-card h4 { color: var(--unifil-orange); margin-bottom: 8px; font-size: 1.1rem; }
+        .example-card p, .example-card ul { font-size: 0.92rem; line-height: 1.55; }
+        .example-card ul { list-style: none; padding: 0; }
+        .example-card li { padding: 3px 0 3px 18px; position: relative; }
+        .example-card li::before { content: '→'; position: absolute; left: 0; color: var(--unifil-orange); }
+        .dark-box { background: #1a2a3a; color: #e6edf3; padding: 22px; border-radius: 15px; margin: 18px 0; animation: fadeInUp 0.6s ease-out forwards; opacity: 0; border-top: 4px solid var(--unifil-orange); }
+        .dark-box h3 { color: #FF8C00; margin-bottom: 12px; font-size: 1.2rem; }
+        .unidade-header { display: flex; align-items: center; gap: 16px; background: linear-gradient(135deg, #1a2a3a 0%, #1e3a5f 100%); padding: 18px 24px; border-radius: 14px; margin-bottom: 22px; animation: fadeInUp 0.6s ease-out forwards; opacity: 0; }
+        .unidade-header .icone { font-size: 2.4rem; }
+        .unidade-header h3 { color: #FF8C00; font-size: 1.4rem; margin-bottom: 3px; }
+        .unidade-header p { color: #8b949e; font-size: 0.95rem; }
+        .timeline { position: relative; padding-left: 36px; margin: 20px 0; }
+        .timeline::before { content: ''; position: absolute; left: 10px; top: 0; bottom: 0; width: 3px; background: var(--unifil-orange); }
+        .timeline-item { position: relative; padding: 14px 0; animation: fadeInLeft 0.6s ease-out forwards; opacity: 0; }
+        .timeline-item::before { content: ''; position: absolute; left: -29px; top: 20px; width: 12px; height: 12px; border-radius: 50%; background: var(--unifil-orange); border: 3px solid white; box-shadow: 0 0 0 3px var(--unifil-orange); }
+        .timeline-item h4 { color: var(--unifil-orange); font-size: 1.1rem; margin-bottom: 4px; }
+        .timeline-item p { font-size: 0.93rem; line-height: 1.5; }
+        .tip-box { background: #fff8e1; border-left: 4px solid #f59e0b; padding: 14px 20px; border-radius: 10px; margin-top: 14px; font-size: 0.95rem; }
+        .warn-box { background: #fce4ec; border-left: 4px solid #c62828; padding: 14px 20px; border-radius: 10px; margin-top: 14px; font-size: 0.95rem; }
+        .cronograma-table { width: 100%; border-collapse: collapse; margin: 16px 0; animation: fadeInUp 0.6s ease-out forwards; opacity: 0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .cronograma-table th { background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%); color: white; padding: 12px 14px; text-align: left; font-size: 0.95rem; }
+        .cronograma-table td { padding: 10px 14px; border-bottom: 1px solid #eee; font-size: 0.88rem; line-height: 1.4; vertical-align: middle; }
+        .cronograma-table tr:hover td { background: #fff8f0; }
+        .aula-num { background: var(--unifil-orange); color: white; border-radius: 50%; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; }
+        .tipo-badge { display: inline-block; padding: 2px 9px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; }
+        .tipo-teoria { background: #e3f2fd; color: #1565c0; }
+        .tipo-pratica { background: #e8f5e9; color: #2e7d32; }
+        .tipo-mista { background: #fff3e0; color: #e65100; }
+        .tipo-avaliacao { background: #fce4ec; color: #880e4f; }
+        .navigation { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; gap: 16px; align-items: center; background: rgba(255,255,255,0.96); padding: 12px 24px; border-radius: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000; }
+        .nav-button { background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%); color: white; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.3s; }
+        .nav-button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,140,0,0.4); }
+        .nav-button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .slide-counter { font-weight: 600; color: var(--unifil-dark); min-width: 70px; text-align: center; font-size: 1rem; }
+        .progress-bar { position: fixed; top: 0; left: 0; width: 100%; height: 5px; background: rgba(255,255,255,0.15); z-index: 1001; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--unifil-orange), var(--ai-blue)); transition: width 0.4s ease; }
+        .slide-dots { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 7px; z-index: 1001; }
+        .dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.35); cursor: pointer; transition: all 0.3s; }
+        .dot.active { background: var(--unifil-orange); transform: scale(1.4); }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInLeft { from { opacity: 0; transform: translateX(-26px); } to { opacity: 1; transform: translateX(0); } }
+        .delay-1 { animation-delay: 0.1s; } .delay-2 { animation-delay: 0.2s; } .delay-3 { animation-delay: 0.3s; } .delay-4 { animation-delay: 0.4s; }
+</style>
+</head>
+<body>
+<div class="progress-bar"><div class="progress-fill" id="progressBar"></div></div>
+<div class="slide-dots" id="slideDots"></div>
+<div class="presentation">
+<div class="slide active">
+  <div class="slide-content">
+    <div class="slide-header"><h1>Inteligência Artificial: Desmistificando a IA no Cotidiano</h1><p>UniFil · Ciência da Computação & Engenharia de Software · 2026.1</p></div>
+    <div class="slide-body" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+      <div style="font-size:4.5rem;margin-bottom:18px;">🤖</div>
+      <h2 style="font-size:2.1rem;color:var(--unifil-orange);margin-bottom:12px;">Aula 1 — Introdução à IA</h2>
+      <p style="font-size:1.1rem;color:var(--unifil-gray);max-width:760px;margin-bottom:28px;line-height:1.7;">De onde vem, o que é e como funciona a Inteligência Artificial no nosso dia a dia</p>
+      <div class="four-col" style="width:100%;max-width:880px;"><div class="stat-card" style="animation-delay:0.0s"><div class="number">11</div><div class="label">Aulas</div></div><div class="stat-card" style="animation-delay:0.1s"><div class="number">33h</div><div class="label">Carga Horária</div></div><div class="stat-card" style="animation-delay:0.2s"><div class="number">4</div><div class="label">Grandes Áreas</div></div><div class="stat-card" style="animation-delay:0.30000000000000004s"><div class="number">100%</div><div class="label">Prático</div></div></div>
+      <div style="margin-top:30px;font-size:1rem;color:var(--unifil-gray);line-height:1.8;"><p><strong>Professor:</strong> Tiago Dutra Galvão &nbsp;|&nbsp; UniFil · Londrina-PR</p><p><strong>Aula 1 de 11</strong> &nbsp;|&nbsp; <strong>Data:</strong> 30/04/2026</p></div>
+    </div>
+  </div>
+</div>
+<div class="slide">
+  <div class="slide-content">
+    <div class="slide-header"><h2>💡 Por que estudar IA?</h2><p>Motivação e relevância da disciplina</p></div>
+    <div class="slide-body">
+<div class="big-idea">A IA já está no seu bolso, na sua TV, no seu banco e no seu médico — mas poucos sabem como ela funciona de verdade.</div>
+<div class="two-col">
+  <div class="content-box">
+    <h3>📊 Dados do Brasil (2024)</h3>
+    <ul>
+      <li><strong>54%</strong> dos brasileiros usaram IA generativa em 2024 — acima da média global de 48%</li>
+      <li><strong>65%</strong> dos brasileiros consideram a IA promissora (57% na média global)</li>
+      <li>Brasil é o <strong>3º país</strong> que mais usa ChatGPT no mundo</li>
+      <li>Mais de <strong>200 milhões</strong> de usuários do ChatGPT globalmente</li>
+    </ul>
+  </div>
+  <div class="content-box delay-1">
+    <h3>🎯 O que esta disciplina propõe</h3>
+    <ul>
+      <li>Ensinar IA de forma <strong>prática, crítica e consciente</strong></li>
+      <li>Foco no que <strong>funciona hoje</strong> no cotidiano</li>
+      <li>Ferramentas gratuitas ou acessíveis</li>
+      <li>Entender onde a IA <strong>ajuda, atrapalha e falha</strong></li>
+      <li>Não exige conhecimento avançado — só curiosidade!</li>
+    </ul>
+  </div>
+</div>
+<div class="tip-box"><strong>💬 Reflexão inicial:</strong> Que ferramentas de IA você já usou hoje? (Spotify, YouTube, Google Maps, WhatsApp…)</div>
+</div>
+  </div>
+</div>
+<div class="slide">
+  <div class="slide-content">
+    <div class="slide-header"><h2>🤔 O que é Inteligência Artificial?</h2><p>Definindo sem mistério</p></div>
+    <div class="slide-body">
+<div class="unidade-header"><div class="icone">🧠</div><div><h3>Definição Objetiva</h3><p>Sem hype, sem ficção científica</p></div></div>
+<div class="two-col">
+  <div class="content-box">
+    <h3>✅ O que IA É</h3>
+    <ul>
+      <li>Uma área da computação que cria sistemas capazes de <strong>simular comportamentos inteligentes</strong></li>
+      <li>Usa algoritmos para <strong>reconhecer padrões</strong> em dados</li>
+      <li>Capaz de <strong>analisar, prever ou gerar</strong> conteúdo com base em grandes volumes de informação</li>
+      <li>IA Estreita (Narrow AI): faz <strong>bem uma tarefa específica</strong></li>
+    </ul>
+  </div>
+  <div class="content-box delay-1">
+    <h3>❌ O que IA NÃO é</h3>
+    <ul>
+      <li>Não pensa nem entende como um <strong>ser humano</strong></li>
+      <li>Não tem <strong>consciência</strong> própria ou emoções</li>
+      <li>Não é <strong>mágica</strong> — é matemática e estatística</li>
+      <li>Não é <strong>sempre precisa</strong> — pode errar, alucinar e reforçar vieses</li>
+      <li>Não é AGI (ainda) — não é inteligência geral</li>
+    </ul>
+  </div>
+</div>
+<div class="dark-box">
+  <h3>🎯 Definição do Gartner</h3>
+  <p style="font-size:0.97rem;line-height:1.7;margin-top:8px;">"A capacidade de um sistema de <strong style="color:#FF8C00;">interpretar dados externos corretamente</strong>, aprender com esses dados e usar esses aprendizados para atingir metas e tarefas específicas por meio de adaptação flexível."</p>
+</div>
+</div>
+  </div>
+</div>
+<div class="slide">
+  <div class="slide-content">
+    <div class="slide-header"><h2>⚡ Como a IA Funciona?</h2><p>O mecanismo por trás da 'mágica'</p></div>
+    <div class="slide-body">
+<div class="big-idea" style="font-size:1.3rem;padding:22px;">A IA prevê a <strong>próxima palavra</strong> (ou pixel, ou ação) com base no que já viu antes — trilhões de vezes.</div>
+<div class="two-col">
+  <div class="content-box">
+    <h3>📝 Exemplo com ChatGPT</h3>
+    <ul>
+      <li>Prompt: <em>"O céu está nublado e pode chover, então é melhor levar um..."</em></li>
+      <li>O modelo calcula probabilidades:<br>→ <strong>"guarda-chuva"</strong> = 81%<br>→ "casaco" = 10%<br>→ "livro" = 0.5%<br>→ "pato" = 0.000001%</li>
+      <li>Escolhe a palavra mais provável e repete o processo</li>
+    </ul>
+  </div>
+  <div class="content-box delay-1">
+    <h3>🔢 Os 3 pilares da IA moderna</h3>
+    <ul>
+      <li><strong>Dados:</strong> quanto mais, melhor — os LLMs viram a internet inteira</li>
+      <li><strong>Algoritmos:</strong> redes neurais inspiradas no cérebro humano</li>
+      <li><strong>Poder computacional:</strong> GPUs e TPUs treinando por semanas</li>
+    </ul>
+    <div style="margin-top:12px;padding:10px;background:white;border-radius:8px;font-size:0.9rem;">
+      <strong>GPT-4</strong>: ~1,8 trilhão de parâmetros<br>
+      <strong>Treinamento:</strong> meses, milhões de dólares em GPUs
+    </div>
+  </div>
+</div>
+<div class="tip-box"><strong>🎮 Demonstração ao vivo:</strong> Vamos explorar o ChatGPT juntos agora!</div>
+</div>
+  </div>
+</div>
+<div class="slide">
+  <div class="slide-content">
+    <div class="slide-header"><h2>🗺️ Mitos vs. Realidades</h2><p>Separando ficção científica da realidade</p></div>
+    <div class="slide-body">
+<div class="three-col">
+  <div class="example-card">
+    <h4>❓ IA vai substituir todos os empregos?</h4>
+    <p style="color:#e65100;font-weight:600;margin-bottom:6px;">⚠️ MITO (parcial)</p>
+    <p>Na prática, IA tende a <strong>complementar tarefas</strong> e criar novas funções. Empregos de rotina mudam mais. Empregos criativos e relacionais mudam menos.</p>
+  </div>
+  <div class="example-card delay-1">
+    <h4>❓ IA tem consciência própria?</h4>
+    <p style="color:#c62828;font-weight:600;margin-bottom:6px;">❌ FALSO</p>
+    <p>IA simula respostas com base em padrões de dados, <strong>sem consciência, emoções ou intenção</strong>. O ChatGPT não "quer" nada.</p>
+  </div>
+  <div class="example-card delay-2">
+    <h4>❓ IA é sempre precisa e confiável?</h4>
+    <p style="color:#c62828;font-weight:600;margin-bottom:6px;">❌ FALSO</p>
+    <p>IA pode <strong>alucinar</strong> (inventar fatos), apresentar vieses e informações desatualizadas. Sempre verifique fontes críticas!</p>
+  </div>
+</div>
+<div class="two-col" style="margin-top:5px;">
+  <div class="example-card" style="border-color:var(--ai-blue);">
+    <h4 style="color:var(--ai-blue);">❓ IA entende o que diz?</h4> 
+    <p style="color:#c62828;font-weight:600;margin-bottom:6px;">❌ FALSO</p>
+    <p>Modelos de linguagem processam <strong>tokens (pedaços de texto)</strong>, não "entendem" semântica como humanos. É correlação estatística sofisticada.</p>
+  </div>
+  <div class="example-card delay-1" style="border-color:var(--ai-green);">
+    <h4 style="color:var(--ai-green);">✅ IA pode ser muito útil?</h4>
+    <p style="color:#2e7d32;font-weight:600;margin-bottom:6px;">✅ VERDADE</p>
+    <p>Para tarefas de <strong>rascunho, análise, organização, criação e automação</strong>, a IA generativa é genuinamente poderosa quando usada corretamente.</p>
+  </div>
+</div>
+</div>
+  </div>
+</div>
+<div class="slide">
+  <div class="slide-content">
+    <div class="slide-header"><h2>🏛️ História da IA</h2><p>De Turing aos LLMs modernos</p></div>
+    <div class="slide-body">
+<div class="timeline">
+  <div class="timeline-item">
+    <h4>1940–50 · Os Primórdios</h4>
+    <p>Turing e o <strong>Teste de Turing</strong> (1950). ENIAC — primeiro computador eletrônico digital. Ideia: "Pode uma máquina pensar?"</p>
+  </div>
+  <div class="timeline-item delay-1">
+    <h4>1956 · Nascimento Oficial da IA</h4>
+    <p>Conferência de <strong>Dartmouth</strong> — John McCarthy cunha o termo "Inteligência Artificial". Objetivo: criar máquinas verdadeiramente inteligentes.</p>
+  </div>
+  <div class="timeline-item delay-2">
+    <h4>1964 · Primeiro Chatbot</h4>
+    <p><strong>ELIZA</strong> — criado no MIT, simulava uma psicanalista respondendo por palavras-chave. Primeiro chatbot da história.</p>
+  </div>
+  <div class="timeline-item delay-3">
+    <h4>1970–80 · Inverno da IA</h4>
+    <p>Cortes de investimento. Expectativas altas, retorno baixo. Período de descrença e estagnação.</p>
+  </div>
+  <div class="timeline-item delay-4">
+    <h4>1997 · Deep Blue vence Kasparov</h4>
+    <p>IBM's <strong>Deep Blue</strong> vence o campeão mundial de xadrez. Marco histórico da IA simbólica.</p>
+  </div>
+</div>
+</div>
+  </div>
+</div>
+<div class="slide">
+  <div class="slide-content">
+    <div class="slide-header"><h2>🚀 História da IA (Continuação)</h2><p>Da virada do milênio até hoje</p></div>
+    <div class="slide-body">
+<div class="timeline">
+  <div class="timeline-item">
+    <h4>2012 · Revolução do Deep Learning</h4>
+    <p><strong>AlexNet</strong> domina o ImageNet. Redes neurais profundas provam valer a pena. Início da era moderna da IA.</p>
+  </div>
+  <div class="timeline-item delay-1">
+    <h4>2017 · Transformers</h4>
+    <p>Google publica <em>"Attention is All You Need"</em>. Arquitetura <strong>Transformer</strong> — a base de todos os LLMs modernos (GPT, Claude, Gemini).</p>
+  </div>
+  <div class="timeline-item delay-2">
+    <h4>2019 · RLHF e GPT-2</h4>
+    <p><strong>Reinforcement Learning from Human Feedback</strong> — técnica que alinha a IA com preferências humanas. GPT-2 surpreende pela qualidade dos textos.</p>
+  </div>
+  <div class="timeline-item delay-3">
+    <h4>Novembro 2022 · ChatGPT</h4>
+    <p>Lançamento do <strong>ChatGPT</strong> — 1 milhão de usuários em 5 dias, 100 milhões em 2 meses. IA generativa chega para o grande público.</p>
+  </div>
+  <div class="timeline-item delay-4">
+    <h4>2023–2024 · Explosão Generativa</h4>
+    <p>GPT-4, Claude, Gemini, Llama, Mistral, DALL-E 3, Midjourney, Sora. IA multimodal (texto + imagem + voz + vídeo).</p>
+  </div>
+</div>
+</div>
+  </div>
+</div>
+<div class="slide">
+  <div class="slide-content">
+    <div class="slide-header"><h2>🗂️ As 4 Grandes Áreas da IA</h2><p>O que vamos explorar nesta disciplina</p></div>
+    <div class="slide-body">
+<div class="four-col">
+  <div class="example-card" style="border-color:var(--ai-blue);">
+    <h4 style="color:var(--ai-blue);">💬 Processamento de Linguagem Natural</h4>
+    <ul><li>Chatbots e assistentes</li><li>Geração de texto</li><li>Tradução automática</li><li>Análise de sentimentos</li><li>Resumo de documentos</li></ul>
+  </div>
+  <div class="example-card delay-1" style="border-color:var(--ai-purple);">
+    <h4 style="color:var(--ai-purple);">🖼️ Geração e Visão Computacional</h4>
+    <ul><li>Geração de imagens</li><li>Reconhecimento facial</li><li>Detecção de objetos</li><li>OCR (leitura de textos)</li><li>Análise de fotos</li></ul>
+  </div>
+  <div class="example-card delay-2" style="border-color:var(--ai-teal);">
+    <h4 style="color:var(--ai-teal);">🎙️ Voz e Áudio</h4>
+    <ul><li>Speech-to-Text</li><li>Text-to-Speech</li><li>Assistentes de voz</li><li>Transcrição automática</li><li>Síntese de voz</li></ul>
+  </div>
+  <div class="example-card delay-3" style="border-color:var(--unifil-orange);">
+    <h4>⚙️ Automação e Dados</h4>
+    <ul><li>Automação de fluxos</li><li>Agentes autônomos</li><li>Análise de dados</li><li>Visualizações</li><li>Relatórios automáticos</li></ul>
+  </div>
+</div>
+<div class="highlight-box" style="margin-top:12px;">
+  <h3>🎯 Ferramentas que vamos usar</h3>
+  <p style="font-size:0.97rem;margin-top:8px;line-height:1.7;">ChatGPT · Claude · Gemini · DALL-E 3 · Midjourney · ElevenLabs · Whisper · Teachable Machine · NotebookLM · Zapier · n8n · Gamma · Microsoft Copilot</p>
+</div>
+</div>
+  </div>
+</div>
+<div class="slide">
+  <div class="slide-content">
+    <div class="slide-header"><h2>📅 Cronograma da Disciplina</h2><p>11 aulas · Quintas-feiras · 30/04 a 09/07/2026</p></div>
+    <div class="slide-body">
+<table class="cronograma-table">
+  <thead><tr><th>#</th><th>Data</th><th>Tema</th><th>Tipo</th></tr></thead>
+  <tbody>
+    <tr><td><div class="aula-num">01</div></td><td><strong>30/04</strong></td><td>Introdução à IA: conceitos, história e panorama</td><td><span class="tipo-badge tipo-mista">Teórico-Prática</span></td></tr>
+    <tr><td><div class="aula-num">02</div></td><td><strong>07/05</strong></td><td>PLN: fundamentos e aplicações com LLMs</td><td><span class="tipo-badge tipo-mista">Teórico-Prática</span></td></tr>
+    <tr><td><div class="aula-num">03</div></td><td><strong>14/05</strong></td><td>Engenharia de Prompts — como falar com a IA</td><td><span class="tipo-badge tipo-pratica">Laboratório</span></td></tr>
+    <tr><td><div class="aula-num">04</div></td><td><strong>21/05</strong></td><td>Geração de Imagens com IA</td><td><span class="tipo-badge tipo-mista">Teórico-Prática</span></td></tr>
+    <tr><td><div class="aula-num">05</div></td><td><strong>28/05</strong></td><td>Síntese e Reconhecimento de Voz</td><td><span class="tipo-badge tipo-mista">Teórico-Prática</span></td></tr>
+    <tr><td><div class="aula-num">06</div></td><td><strong>04/06</strong></td><td>Visão Computacional na prática</td><td><span class="tipo-badge tipo-pratica">Laboratório</span></td></tr>
+    <tr><td><div class="aula-num">07</div></td><td><strong>11/06</strong></td><td>Automação de Tarefas com IA</td><td><span class="tipo-badge tipo-pratica">Laboratório</span></td></tr>
+    <tr><td><div class="aula-num">08</div></td><td><strong>18/06</strong></td><td>Reconhecimento e Visualização de Dados</td><td><span class="tipo-badge tipo-mista">Teórico-Prática</span></td></tr>
+    <tr><td><div class="aula-num">09</div></td><td><strong>25/06</strong></td><td>IA para Produtividade: apresentações e docs</td><td><span class="tipo-badge tipo-pratica">Laboratório</span></td></tr>
+    <tr><td><div class="aula-num">10</div></td><td><strong>02/07</strong></td><td>Ética, Tendências e Orientação do Projeto</td><td><span class="tipo-badge tipo-teoria">Seminário</span></td></tr>
+    <tr><td><div class="aula-num" style="background:var(--ai-red);">11</div></td><td><strong>09/07</strong></td><td>🏆 Apresentações dos Projetos Finais</td><td><span class="tipo-badge tipo-avaliacao">Avaliação</span></td></tr>
+  </tbody>
+</table>
+</div>
+  </div>
+</div>
+<div class="slide">
+  <div class="slide-content">
+    <div class="slide-header"><h2>📊 Avaliações</h2><p>Como será avaliado o seu aprendizado</p></div>
+    <div class="slide-body">
+<div class="two-col">
+  <div class="content-box">
+    <h3>📋 Instrumentos Avaliativos</h3>
+    <ul>
+      <li><strong>Participação + atividades práticas (20%)</strong><br>Aulas 2 a 9 — exercícios guiados em aula</li>
+      <li style="margin-top:8px;"><strong>Trabalho Prático 1 (20%)</strong><br>Aplicação de PLN/texto · Entrega: 21/05 (Aula 4)</li>
+      <li style="margin-top:8px;"><strong>Trabalho Prático 2 (20%)</strong><br>Visão Computacional ou Voz · Entrega: 11/06 (Aula 7)</li>
+      <li style="margin-top:8px;"><strong>Projeto Final (40%)</strong><br>Aplicação integrada · Apresentação: 09/07 (Aula 11)</li>
+    </ul>
+  </div>
+  <div>
+    <div class="content-box delay-1">
+      <h3>📌 Projeto Final</h3>
+      <ul>
+        <li>Combinar <strong>≥ 2 áreas da IA</strong> estudadas</li>
+        <li>Demonstração funcional ao vivo</li>
+        <li>Documentação técnica (apresentação)</li>
+        <li>Grupos de <strong>2 a 3 pessoas</strong></li>
+        <li>10–15 minutos de apresentação</li>
+      </ul>
+    </div>
+    <div class="tip-box" style="margin-top:12px;"><strong>✅ Uso de IA é permitido</strong> e encorajado em todas as avaliações — desde que devidamente documentado!</div>
+  </div>
+</div>
+<div class="dark-box" style="margin-top:12px;">
+  <h3>⚠️ Regras Gerais</h3>
+  <p style="font-size:0.93rem;line-height:1.7;">Presença mínima: <strong style="color:#FF8C00;">75%</strong> (mínimo 9 aulas) &nbsp;·&nbsp; Atividades entregues via AVA ou meio definido pelo professor &nbsp;·&nbsp; Dúvidas: atendimento nas quintas ou por e-mail</p>
+</div>
+</div>
+  </div>
+</div>
+<div class="slide">
+  <div class="slide-content">
+    <div class="slide-header"><h2>🔬 Atividade da Aula 1</h2><p>Exploração guiada — primeiros passos com IA</p></div>
+    <div class="slide-body">
+<div class="unidade-header"><div class="icone">🎯</div><div><h3>Hands-on: Conhecendo os Modelos</h3><p>Vamos testar e comparar agora mesmo!</p></div></div>
+<div class="three-col">
+  <div class="example-card" style="border-color:var(--ai-green);">
+    <h4 style="color:var(--ai-green);">Passo 1 — Acesse</h4>
+    <ul>
+      <li>chatgpt.com (conta gratuita)</li>
+      <li>claude.ai (conta gratuita)</li>
+      <li>gemini.google.com</li>
+    </ul>
+    <p style="margin-top:8px;font-size:0.88rem;color:var(--unifil-gray);">Se não tiver conta, crie uma agora com e-mail pessoal.</p>
+  </div>
+  <div class="example-card delay-1" style="border-color:var(--ai-blue);">
+    <h4 style="color:var(--ai-blue);">Passo 2 — Teste o mesmo prompt</h4>
+    <p style="font-size:0.9rem;line-height:1.6;">Envie nos 3 modelos:<br><em>"Explique o que é inteligência artificial em 3 frases simples, como se eu fosse um estudante de 15 anos."</em></p>
+  </div>
+  <div class="example-card delay-2" style="border-color:var(--ai-purple);">
+    <h4 style="color:var(--ai-purple);">Passo 3 — Compare e discuta</h4>
+    <ul>
+      <li>Qual foi mais claro?</li>
+      <li>Qual foi mais longo?</li>
+      <li>Algum cometeu erro?</li>
+      <li>Qual linguagem preferiu?</li>
+    </ul>
+  </div>
+</div>
+<div class="highlight-box">
+  <h3>🏠 Para a Próxima Aula (07/05)</h3>
+  <p style="font-size:0.97rem;margin-top:8px;line-height:1.7;">Explore o ChatGPT por pelo menos 15 minutos. Tente fazer perguntas sobre sua área, peça para escrever um código simples, um e-mail, uma poesia. Traga exemplos interessantes ou problemas que encontrou!</p>
+</div>
+</div>
+  </div>
+</div>
+</div>
+<div class="navigation">
+    <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+    <span class="slide-counter" id="slideCounter">1 / 11</span>
+    <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+</div>
+<script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    const dotsContainer = document.getElementById('slideDots');
+    for (let i = 0; i < totalSlides; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'dot' + (i === 0 ? ' active' : '');
+        dot.onclick = () => showSlide(i);
+        dotsContainer.appendChild(dot);
+    }
+    function showSlide(n) {
+        slides.forEach(s => s.classList.remove('active', 'prev'));
+        currentSlide = (n + totalSlides) % totalSlides;
+        slides[currentSlide].classList.add('active');
+        document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+        document.getElementById('prevBtn').disabled = currentSlide === 0;
+        document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        document.getElementById('progressBar').style.width = ((currentSlide + 1) / totalSlides * 100) + '%';
+        document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === currentSlide));
+        const animated = slides[currentSlide].querySelectorAll('.content-box,.example-card,.highlight-box,.big-idea,.timeline-item,.stat-card,.dark-box,.unidade-header,.cronograma-table');
+        animated.forEach(el => { el.style.animation = 'none'; el.style.opacity = '0'; void el.offsetWidth; el.style.animation = ''; });
+    }
+    function changeSlide(dir) { const next = currentSlide + dir; if (next >= 0 && next < totalSlides) showSlide(next); }
+    document.addEventListener('keydown', e => { if (e.key === 'ArrowLeft') changeSlide(-1); if (e.key === 'ArrowRight') changeSlide(1); });
+    let touchStartX = 0;
+    document.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX);
+    document.addEventListener('touchend', e => { const dx = e.changedTouches[0].screenX - touchStartX; if (dx < -50) changeSlide(1); if (dx > 50) changeSlide(-1); });
+    showSlide(0);
+</script>
+</body>
+</html>
